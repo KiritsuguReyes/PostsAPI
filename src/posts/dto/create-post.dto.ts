@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePostDto {
@@ -29,4 +29,12 @@ export class CreatePostDto {
   @IsString()
   @IsNotEmpty()
   author: string;
+
+  @ApiProperty({
+    description: 'ID del usuario autenticado (se inyecta automáticamente desde el token)',
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  userId?: string;
 }

@@ -16,6 +16,9 @@ export class Post {
   @Prop({ required: true, index: true })
   author: string;
 
+  @Prop({ required: false, index: true })
+  userId?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }

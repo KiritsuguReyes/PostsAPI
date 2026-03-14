@@ -11,7 +11,9 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth, ApiBody, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -19,6 +21,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { ApiResponse } from '../common/responses/api-response';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { JwtClaimsUtil } from '../common/utils/jwt-claims.util';
 
 @ApiTags('Posts')
 @ApiBearerAuth('JWT-auth')
@@ -37,7 +40,11 @@ export class PostsController {
     description: 'Post creado exitosamente' 
   })
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body(ValidationPipe) createPostDto: CreatePostDto) {
+  async create(@Req() req: Request, @Body(ValidationPipe) createPostDto: CreatePostDto) {
+    const userId = JwtClaimsUtil.getUserId(req);
+    const name   = JwtClaimsUtil.getName(req);
+    if (userId) createPostDto.userId = userId;
+    if (name && !createPostDto.author) createPostDto.author = name;
     const post = await this.postsService.create(createPostDto);
     return ApiResponse.success(post, 'Post creado exitosamente');
   }

@@ -32,7 +32,19 @@ export class JwtClaimsUtil {
    * Obtiene el ID del usuario (equivalente a obtener "sub" claim)
    */
   static getUserId(request: any): string | null {
-    return this.findFirstValue(request, 'sub');
+    const user = request.user;
+    if (!user) return null;
+    // request.user is the Mongoose document (has _id), not the raw JWT payload
+    return user.sub?.toString() || user._id?.toString() || null;
+  }
+
+  /**
+   * Obtiene el nombre del usuario
+   */
+  static getName(request: any): string | null {
+    const user = request.user;
+    if (!user) return null;
+    return user.name || null;
   }
 
   /**

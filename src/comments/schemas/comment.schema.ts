@@ -19,6 +19,9 @@ export class Comment {
   @Prop({ required: true, minlength: 5 })
   body: string;
 
+  @Prop({ required: false })
+  userId?: string;
+
   createdAt: Date;
 }
 

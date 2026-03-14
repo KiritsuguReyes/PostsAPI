@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsEmail, MinLength, IsMongoId } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, MinLength, IsMongoId, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCommentDto {
@@ -36,4 +36,12 @@ export class CreateCommentDto {
   @IsNotEmpty()
   @MinLength(5, { message: 'El comentario debe tener al menos 5 caracteres' })
   body: string;
+
+  @ApiProperty({
+    description: 'ID del usuario autenticado (se inyecta automáticamente desde el token)',
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  userId?: string;
 }

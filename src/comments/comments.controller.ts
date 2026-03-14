@@ -11,7 +11,9 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -19,6 +21,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { ApiResponse } from '../common/responses/api-response';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { JwtClaimsUtil } from '../common/utils/jwt-claims.util';
 
 @ApiTags('Comments')
 @ApiBearerAuth('JWT-auth')
@@ -37,7 +40,13 @@ export class CommentsController {
     description: 'Comentario creado exitosamente' 
   })
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body(ValidationPipe) createCommentDto: CreateCommentDto) {
+  async create(@Req() req: Request, @Body(ValidationPipe) createCommentDto: CreateCommentDto) {
+    const userId = JwtClaimsUtil.getUserId(req);
+    const name   = JwtClaimsUtil.getName(req);
+    const email  = JwtClaimsUtil.getUserEmail(req);
+    if (userId) createCommentDto.userId = userId;
+    if (name && !createCommentDto.name) createCommentDto.name = name;
+    if (email && !createCommentDto.email) createCommentDto.email = email;
     const comment = await this.commentsService.create(createCommentDto);
     return ApiResponse.success(comment, 'Comentario creado exitosamente');
   }
