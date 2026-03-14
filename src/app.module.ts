@@ -10,7 +10,6 @@ import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { JwtClaimsUtil } from './common/utils/jwt-claims.util';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HealthController } from './common/health/health.controller';
 
@@ -54,7 +53,6 @@ import { HealthController } from './common/health/health.controller';
   controllers: [AppController, HealthController],
   providers: [
     AppService,
-    JwtClaimsUtil,
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,

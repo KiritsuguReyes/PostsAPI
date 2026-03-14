@@ -14,8 +14,6 @@ import { JwtClaimsUtil } from '../utils/jwt-claims.util';
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name);
 
-  constructor(private readonly jwtClaimsUtil: JwtClaimsUtil) {}
-
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<Request>();
@@ -25,10 +23,9 @@ export class LoggingInterceptor implements NestInterceptor {
     const userAgent = request.get('User-Agent') || '';
     const startTime = Date.now();
 
-    // Extraer información del usuario autenticado (si existe)
-    const userClaims = this.jwtClaimsUtil.extractClaimsFromRequest(request);
-    const userId = userClaims?.sub || 'anonymous';
-    const userEmail = userClaims?.email || 'no-auth';
+    // Extraer información del usuario autenticado (si existe) - Simplificado como C#
+    const userId = JwtClaimsUtil.getUserId(request) || 'anonymous';
+    const userEmail = JwtClaimsUtil.getUserEmail(request) || 'no-auth';
 
     // Log de la request entrante
     this.logger.log(
