@@ -24,12 +24,9 @@ export class RedisCacheService implements OnModuleDestroy {
       connectTimeout: 5000,
     });
 
-    this.client.on('connect', () => this.logger.log('✅ Redis conectado'));
-    this.client.on('ready', () => this.logger.log('✅ Redis listo'));
     this.client.on('error', (err) =>
       this.logger.error(`❌ Redis error: ${err.message}`),
     );
-    this.client.on('close', () => this.logger.warn('⚠️  Redis conexión cerrada'));
 
     this.client.connect().catch((err) =>
       this.logger.error(`No se pudo conectar a Redis: ${err.message}`),
@@ -119,16 +116,10 @@ export class RedisCacheService implements OnModuleDestroy {
 
         if (entry.cachedAt > lastModified) {
           // ✅ Cache válido y fresco
-          this.logger.debug(`Cache HIT [${key}]`);
           return entry.data;
         }
 
         // ⚠️  Cache stale: hay datos más nuevos en DB
-        this.logger.debug(
-          `Cache STALE [${key}] - cachedAt: ${entry.cachedAt}, lastModified: ${lastModified}`,
-        );
-      } else {
-        this.logger.debug(`Cache MISS [${key}]`);
       }
 
       // ── Refrescar desde DB ──────────────────────────────────────────────
@@ -170,9 +161,6 @@ export class RedisCacheService implements OnModuleDestroy {
         }
       } while (cursor !== '0');
 
-      if (deletedCount > 0) {
-        this.logger.debug(`Invalidadas ${deletedCount} keys con patrón "${pattern}"`);
-      }
     } catch (err) {
       this.logger.warn(`deletePattern falló para "${pattern}": ${err.message}`);
     }
@@ -191,7 +179,6 @@ export class RedisCacheService implements OnModuleDestroy {
       this.touchLastModified(collection),
       this.deletePattern(`${collection}:*`),
     ]);
-    this.logger.debug(`Colección "${collection}" invalidada`);
   }
 
   // ─── Health ───────────────────────────────────────────────────────────────
