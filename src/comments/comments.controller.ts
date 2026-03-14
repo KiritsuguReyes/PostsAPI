@@ -42,7 +42,7 @@ export class CommentsController {
     return ApiResponse.success(comment, 'Comentario creado exitosamente');
   }
 
-  @Get('by-post')
+  @Get()
   @ApiOperation({ 
     summary: 'Obtener todos los comentarios de un post', 
     description: 'Obtiene todos los comentarios que pertenecen a un post específico usando el postId como query parameter' 

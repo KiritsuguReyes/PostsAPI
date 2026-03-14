@@ -1,0 +1,127 @@
+[
+  {
+    "title": "Introducción a Angular 18 con Signals",
+    "body": "Angular 18 introduce los Signals como mecanismo reactivo nativo que reemplaza progresivamente a RxJS para la gestión del estado local en componentes. En este post exploraremos cómo usar signal(), computed() y effect() de forma efectiva.",
+    "author": "María García"
+  },
+  {
+    "title": "NestJS 11: Arquitectura Modular y Clean Code",
+    "body": "NestJS 11 sigue siendo el framework más sólido para construir APIs en Node.js. Su sistema de módulos, guards, interceptores y pipes nos permite aplicar principios SOLID de forma natural. Analizamos las mejores prácticas para estructurar proyectos grandes.",
+    "author": "Carlos Rodríguez"
+  },
+  {
+    "title": "MongoDB con Mongoose: índices y rendimiento",
+    "body": "Optimizar consultas en MongoDB requiere entender cómo funcionan los índices compuestos, el explain plan y las estrategias de caché. Este post muestra cómo pasar de cientos de ms a pocos ms en consultas complejas con colecciones de millones de documentos.",
+    "author": "Ana Martínez"
+  },
+  {
+    "title": "Redis como caché en NestJS: guía completa",
+    "body": "Implementar caché con Redis en NestJS reduce drásticamente la carga sobre MongoDB. Exploramos patrones como cache-aside, TTL dinámico, invalidación por colección y cómo gestionar la consistencia de datos entre la caché y la base de datos.",
+    "author": "Pedro Sánchez"
+  },
+  {
+    "title": "JWT Authentication en NestJS paso a paso",
+    "body": "Implementar autenticación segura con JWT en NestJS implica configurar Passport.js, el JwtStrategy, guards personalizados y el manejo correcto de tokens expirados. Este tutorial cubre desde el login hasta la protección de rutas con roles.",
+    "author": "Laura López"
+  },
+  {
+    "title": "Docker y Docker Compose para aplicaciones NestJS",
+    "body": "Contenerizar una API en NestJS con Docker permite despliegues reproducibles en cualquier entorno. Aprenderemos a crear un Dockerfile multi-stage optimizado y un docker-compose.yml que orqueste la API junto con MongoDB y Redis.",
+    "author": "Juan Fernández"
+  },
+  {
+    "title": "Formularios reactivos en Angular: validaciones avanzadas",
+    "body": "Los formularios reactivos de Angular ofrecen un control total sobre la validación. Veremos cómo crear validadores síncronos y asíncronos personalizados, validaciones cruzadas entre campos y cómo integrarlos con signals para una UI reactiva.",
+    "author": "Sofía Torres"
+  },
+  {
+    "title": "RxJS en la práctica: operadores esenciales",
+    "body": "switchMap, mergeMap, concatMap, exhaustMap: ¿cuándo usar cada uno? Este post desmitifica los operadores de orden superior de RxJS con ejemplos reales de peticiones HTTP, cancelación de requests y manejo de errores con catchError y retry.",
+    "author": "Diego Morales"
+  },
+  {
+    "title": "Manejo global de errores: Frontend y Backend sincronizados",
+    "body": "Una estrategia coherente de manejo de errores entre Angular y NestJS mejora enormemente la experiencia de usuario. Exploramos cómo crear un GlobalExceptionFilter en Nest y un HttpInterceptor en Angular que conviertan errores técnicos en mensajes útiles para el usuario.",
+    "author": "Elena Ruiz"
+  },
+  {
+    "title": "Paginación eficiente con MongoDB y NestJS",
+    "body": "La paginación por offset tiene limitaciones de rendimiento en colecciones grandes. Este post compara paginación por offset vs cursor-based, y muestra cómo implementar paginación con filtros dinámicos, ordenamiento y conteo total usando el aggregation pipeline de MongoDB.",
+    "author": "Andrés Castillo"
+  },
+  {
+    "title": "TypeScript 5: Decoradores y Metadata en NestJS",
+    "body": "TypeScript 5 estabiliza los decoradores y mejora la inferencia de tipos genéricos. En este post analizamos cómo NestJS aprovecha los metadatos de los decoradores para construir su sistema de inyección de dependencias y cómo crear decoradores personalizados.",
+    "author": "Isabel Vega"
+  },
+  {
+    "title": "Angular Standalone Components: el futuro sin NgModule",
+    "body": "Los Standalone Components eliminan la necesidad de NgModule y simplifican drásticamente la arquitectura de aplicaciones Angular. Veremos cómo migrar un proyecto existente, gestionar las dependencias y aprovechar el lazy loading con la nueva API de rutas.",
+    "author": "Roberto Jiménez"
+  },
+  {
+    "title": "Testing en NestJS con Jest: guía completa",
+    "body": "Escribir tests unitarios e de integración en NestJS requiere entender el sistema de módulos de testing, los mocks de Mongoose, los spies de servicios y cómo alcanzar alta cobertura de código. Este post cubre todas las estrategias desde DTOs hasta servicios complejos.",
+    "author": "Carmen Molina"
+  },
+  {
+    "title": "Swagger y OpenAPI en NestJS: documentación automática",
+    "body": "NestJS integra Swagger a través de @nestjs/swagger para generar documentación OpenAPI automáticamente desde los decoradores. Aprenderemos a configurar el módulo, documentar DTOs, endpoints y respuestas, y cómo exportar la colección para Postman.",
+    "author": "Javier Herrera"
+  },
+  {
+    "title": "WebSockets en tiempo real con NestJS y Socket.io",
+    "body": "Agregar funcionalidad en tiempo real a una API REST en NestJS es sencillo con los Gateways de WebSockets. En este post construimos un sistema de notificaciones en vivo que complementa los endpoints REST con actualizaciones push al cliente.",
+    "author": "Patricia Álvarez"
+  },
+  {
+    "title": "Microservicios con NestJS: comunicación entre servicios",
+    "body": "NestJS ofrece soporte nativo para microservicios con varios transportes: TCP, Redis, RabbitMQ, Kafka y NATS. Comparamos sus ventajas y construimos un ejemplo práctico de comunicación request-response y event-based entre dos servicios independientes.",
+    "author": "Miguel Ángel Díaz"
+  },
+  {
+    "title": "State Management en Angular con Signals y Services",
+    "body": "Con la llegada de los Signals en Angular, el patrón de store reactivo se simplifica enormemente sin necesidad de librerías externas. Construimos un servicio de estado global tipado que combina signals, computed values y efectos para gestionar datos compartidos.",
+    "author": "Natalia Romero"
+  },
+  {
+    "title": "Optimización de rendimiento en Angular: lazy loading y OnPush",
+    "body": "Mejorar el rendimiento de una SPA Angular requiere combinar múltiples técnicas: lazy loading de módulos, ChangeDetectionStrategy.OnPush, defer blocks, preloading strategies y el análisis con Chrome DevTools. Este post presenta un checklist completo.",
+    "author": "Fernando Ortiz"
+  },
+  {
+    "title": "GraphQL con NestJS: más allá de REST",
+    "body": "NestJS soporta GraphQL de forma nativa con el paquete @nestjs/graphql. Exploramos las diferencias entre Code-First y Schema-First, cómo definir resolvers, mutations, subscriptions y cómo proteger el schema con guards basados en roles.",
+    "author": "Lucía Navarro"
+  },
+  {
+    "title": "CI/CD con GitHub Actions para proyectos Angular y NestJS",
+    "body": "Automatizar el ciclo de build, test y deploy con GitHub Actions mejora la calidad del código y acelera las entregas. Construimos dos pipelines completos: uno para la API NestJS con Docker y otro para Angular con despliegue en Vercel o Netlify.",
+    "author": "Sergio Moreno"
+  },
+  {
+    "title": "Seguridad en APIs REST: OWASP Top 10 en NestJS",
+    "body": "Proteger una API en NestJS requiere aplicar múltiples capas de seguridad. Analizamos cada categoría del OWASP Top 10 y su mitigación práctica: validación con class-validator, helmet para cabeceras HTTP, rate limiting con ThrottlerGuard y sanitización de inputs.",
+    "author": "Cristina Flores"
+  },
+  {
+    "title": "Tailwind CSS con Angular: utility-first sin fricción",
+    "body": "Integrar Tailwind CSS en un proyecto Angular es sencillo y potencia enormemente la velocidad de desarrollo. Veremos la configuración inicial, cómo crear componentes reutilizables con @apply, dark mode, animaciones y cómo evitar los errores más comunes de purging.",
+    "author": "Alejandro Guerrero"
+  },
+  {
+    "title": "Aggregation Pipeline en MongoDB: consultas avanzadas",
+    "body": "El aggregation pipeline de MongoDB permite realizar transformaciones complejas de datos directamente en la base de datos. Este post cubre los stages más importantes: $match, $group, $lookup, $unwind, $project y $facet con ejemplos reales de casos de uso.",
+    "author": "Raquel Mendoza"
+  },
+  {
+    "title": "Internacionalización (i18n) en Angular con @angular/localize",
+    "body": "Construir aplicaciones multiidioma en Angular con @angular/localize o ngx-translate requiere planificar desde el principio la arquitectura de traducciones. Este post compara ambos enfoques, aborda la localización de fechas y números, y el manejo de plurales.",
+    "author": "Pablo Ramos"
+  },
+  {
+    "title": "Clean Architecture en proyectos Full Stack: del backend al frontend",
+    "body": "Aplicar Clean Architecture en un proyecto con NestJS y Angular implica separar claramente las responsabilidades en capas: dominio, aplicación, infraestructura y presentación. Este post muestra cómo estructurar ambos proyectos de forma que sean testables, mantenibles y escalables.",
+    "author": "Marta Iglesias"
+  }
+]
