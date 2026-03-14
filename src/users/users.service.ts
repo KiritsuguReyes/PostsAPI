@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { RedisCacheService } from '../common/cache/redis-cache.service';
 
 const COLLECTION = 'users';
@@ -50,6 +51,16 @@ export class UsersService {
       },
       COLLECTION,
     );
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.userModel
+      .findByIdAndUpdate(id, updateUserDto, { new: true })
+      .select('-password')
+      .exec();
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+    await this.cache.invalidateCollection(COLLECTION);
+    return user;
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {

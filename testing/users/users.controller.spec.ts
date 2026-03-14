@@ -14,6 +14,7 @@ const mockUsersService = {
   create: jest.fn(),
   findAll: jest.fn(),
   findOne: jest.fn(),
+  update: jest.fn(),
 };
 
 describe('UsersController', () => {
@@ -74,6 +75,21 @@ describe('UsersController', () => {
       expect(service.findOne).toHaveBeenCalledWith('507f1f77bcf86cd799439033');
       expect(result).toBeInstanceOf(ApiResponse);
       expect(result.data).toEqual(mockUser);
+    });
+  });
+
+  describe('update()', () => {
+    it('should update a user and return ApiResponse.success', async () => {
+      const dto = { name: 'Updated Name' };
+      const updated = { ...mockUser, name: 'Updated Name' };
+      mockUsersService.update.mockResolvedValue(updated);
+
+      const result = await controller.update('507f1f77bcf86cd799439033', dto as any);
+
+      expect(service.update).toHaveBeenCalledWith('507f1f77bcf86cd799439033', dto);
+      expect(result).toBeInstanceOf(ApiResponse);
+      expect(result.success).toBe(true);
+      expect((result.data as any).name).toBe('Updated Name');
     });
   });
 });

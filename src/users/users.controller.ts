@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Param,
   Query,
@@ -13,6 +14,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiResponse } from '../common/responses/api-response';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -85,5 +87,23 @@ export class UsersController {
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findOne(id);
     return ApiResponse.success(user, 'Usuario obtenido exitosamente');
+  }
+
+  @Put(':id')
+  @ApiOperation({
+    summary: 'Actualizar usuario',
+    description: 'Actualiza los datos de un usuario existente. Requiere autenticación JWT.',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @SwaggerApiResponse({ status: 200, description: 'Usuario actualizado exitosamente' })
+  @SwaggerApiResponse({ status: 401, description: 'No autorizado - Token JWT requerido' })
+  @SwaggerApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @UseGuards(JwtAuthGuard)
+  async update(
+    @Param('id') id: string,
+    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
+  ) {
+    const user = await this.usersService.update(id, updateUserDto);
+    return ApiResponse.success(user, 'Usuario actualizado exitosamente');
   }
 }

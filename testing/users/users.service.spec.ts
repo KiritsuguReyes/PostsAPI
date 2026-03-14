@@ -25,6 +25,7 @@ function createMockUserModel() {
   ModelMock.find = jest.fn();
   ModelMock.findById = jest.fn();
   ModelMock.findOne = jest.fn();
+  ModelMock.findByIdAndUpdate = jest.fn();
   return ModelMock;
 }
 
@@ -154,6 +155,31 @@ describe('UsersService', () => {
       mockRedisCacheService.getOrSet.mockImplementation(async (_k, factory) => factory());
 
       await expect(service.findOne('nonexistentid')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('update()', () => {
+    it('should update user and invalidate cache', async () => {
+      const updated = { _id: 'uid', name: 'Updated', email: 'u@u.com' };
+      model.findByIdAndUpdate = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(updated),
+      });
+
+      const result = await service.update('uid', { name: 'Updated' });
+
+      expect(model.findByIdAndUpdate).toHaveBeenCalledWith('uid', { name: 'Updated' }, { new: true });
+      expect(mockRedisCacheService.invalidateCollection).toHaveBeenCalledWith('users');
+      expect(result).toEqual(updated);
+    });
+
+    it('should throw NotFoundException when user not found', async () => {
+      model.findByIdAndUpdate = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service.update('nonexistent', { name: 'X' })).rejects.toThrow(NotFoundException);
     });
   });
 
