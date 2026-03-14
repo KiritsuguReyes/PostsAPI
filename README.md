@@ -6,13 +6,15 @@ API REST empresarial construida con NestJS, MongoDB y Redis. Diseñada para alto
 
 | Categoría | Tecnología | Descripción |
 |-----------|------------|-------------|
-| **Framework** | NestJS 10 | Arquitectura modular con inyección de dependencias |
+| **Framework** | NestJS 11 | Arquitectura modular con inyección de dependencias |
 | **Base de datos** | MongoDB + Mongoose | Connection pooling optimizado para alta carga |
 | **Cache** | Redis + ioredis | Cache inteligente con invalidación por modificación |
 | **Autenticación** | JWT + Passport | Tokens con expiración de 8 horas |
 | **Rate Limiting** | @nestjs/throttler + Redis | 100 req/min global, 5 intentos/min en login |
 | **Documentación** | Swagger/OpenAPI | UI interactiva en `/api` |
+| **Versionado** | URI Versioning | `/v1/ruta` — soporte de múltiples versiones simultáneas |
 | **Clustering** | Node.js cluster | 1 worker por CPU core en producción |
+| **Contenedores** | Docker + Compose | API + MongoDB + Redis en un solo comando |
 
 ---
 
@@ -268,10 +270,108 @@ const role = JwtClaimsUtil.getUserRole(request);
 
 ---
 
+## Versionado de API
+
+La API usa **URI versioning**: la versión va en la URL (`/v1/ruta`). Esto permite añadir nuevas versiones sin romper integraciones existentes — los clientes que usan `v1` siguen funcionando aunque exista una `v2`.
+
+### Versión actual: v1
+
+Todos los endpoints tienen el prefijo `/v1/`:
+
+```
+GET  /v1/posts
+POST /v1/auth/login
+GET  /v1/health/ping
+```
+
+### Añadir una versión futura (v2)
+
+Basta con crear un nuevo controller con `version: '2'` — `v1` sigue funcionando sin cambios:
+
+```typescript
+@Controller({ path: 'posts', version: '2' })
+export class PostsV2Controller {
+  // Nueva implementación sin afectar v1
+}
+```
+
+---
+
+## Docker
+
+### Levantar con Docker (recomendado)
+
+Un solo comando levanta **API + MongoDB + Redis** sin necesidad de configuración externa:
+
+```bash
+npm run docker
+```
+
+Esto ejecuta `docker-compose up -d` y arranca los 3 contenedores:
+
+| Contenedor | Imagen | Puerto |
+|------------|--------|--------|
+| `posts-api` | NestJS (custom build) | `4202` → interno `3000` |
+| `posts-mongo` | `mongo:7` | `27017` |
+| `posts-redis` | `redis:7-alpine` | `6379` |
+
+### Comandos Docker
+
+```bash
+# Levantar stack completo (mata proceso Node local si existe)
+npm run docker
+
+# Apagar todos los contenedores
+npm run docker:down
+
+# Apagar y borrar datos (MongoDB + Redis)
+docker-compose down -v
+
+# Reconstruir imagen después de cambios en el código
+docker-compose up -d --build
+
+# Ver logs de la API
+docker logs posts-api -f
+
+# Ver estado de los contenedores
+docker-compose ps
+```
+
+### Correr en local (sin Docker)
+
+```bash
+# Proceso único con hot reload
+npm run start:dev
+
+# Proceso único sin hot reload
+npm start
+```
+
+> **Nota:** Al correr en local, la app usa las variables del `.env` directamente. El MongoDB debe estar accesible en `localhost:27017` (puede ser el contenedor de Docker ejecutándose en paralelo, que expone ese puerto).
+
+### Variables de entorno con Docker
+
+Docker lee el `.env` del directorio raíz. Lo que controla cada variable:
+
+| Variable en `.env` | Efecto en Docker |
+|---|---|
+| `PORT=4202` | Puerto externo del host (accedes por `localhost:4202`) |
+| `JWT_SECRET=...` | Se pasa al contenedor ✅ |
+| `NODE_ENV=...` | Se pasa al contenedor ✅ |
+| `MONGODB_URI=...` | **Ignorada** — Docker usa el contenedor interno `mongo:27017` |
+| `REDIS_URL=...` | **Ignorada** — Docker usa el contenedor interno `redis:6379` |
+
+Para aplicar cambios en variables de entorno:
+```bash
+docker-compose up -d   # Basta para variables (sin --build)
+```
+
+---
+
 ## Health Check
 
 ```http
-GET /health
+GET /v1/health
 ```
 
 ```json
@@ -304,49 +404,51 @@ GET /health
 
 ## API Endpoints
 
+> Todos los endpoints usan el prefijo `/v1/`. Swagger disponible en `http://localhost:4202/api`
+
 ### Auth
 
 | Método | Endpoint | Descripción | Rate Limit |
 |--------|----------|-------------|------------|
-| `POST` | `/auth/login` | Iniciar sesión | 5/min |
+| `POST` | `/v1/auth/login` | Iniciar sesión | 5/min |
 
 ### Posts (requiere JWT)
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `GET` | `/posts?limit=50` | Todos los posts (máx 100k) |
-| `GET` | `/posts/paginated?page=1&limit=10&search=Angular&author=Juan&sortBy=createdAt&sortOrder=desc` | Posts paginados con filtros |
-| `GET` | `/posts/:id` | Post por ID |
-| `POST` | `/posts` | Crear post |
-| `POST` | `/posts/bulk` | Carga masiva de posts |
-| `PUT` | `/posts/:id` | Actualizar post |
-| `DELETE` | `/posts/:id` | Eliminar post |
+| `GET` | `/v1/posts?limit=50` | Todos los posts (máx 100k) |
+| `GET` | `/v1/posts/paginated?page=1&limit=10&search=Angular&author=Juan&sortBy=createdAt&sortOrder=desc` | Posts paginados con filtros |
+| `GET` | `/v1/posts/:id` | Post por ID |
+| `POST` | `/v1/posts` | Crear post |
+| `POST` | `/v1/posts/bulk` | Carga masiva de posts |
+| `PUT` | `/v1/posts/:id` | Actualizar post |
+| `DELETE` | `/v1/posts/:id` | Eliminar post |
 
 ### Comments (requiere JWT)
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `GET` | `/comments/by-post?postId=xxx` | Comentarios de un post |
-| `GET` | `/comments/paginated?page=1&limit=10&postId=xxx&name=Juan` | Comentarios paginados |
-| `GET` | `/comments/:id` | Comentario por ID |
-| `POST` | `/comments` | Crear comentario |
-| `PUT` | `/comments/:id` | Actualizar comentario |
-| `DELETE` | `/comments/:id` | Eliminar comentario |
+| `GET` | `/v1/comments/by-post?postId=xxx` | Comentarios de un post |
+| `GET` | `/v1/comments/paginated?page=1&limit=10&postId=xxx&name=Juan` | Comentarios paginados |
+| `GET` | `/v1/comments/:id` | Comentario por ID |
+| `POST` | `/v1/comments` | Crear comentario |
+| `PUT` | `/v1/comments/:id` | Actualizar comentario |
+| `DELETE` | `/v1/comments/:id` | Eliminar comentario |
 
 ### Users
 
 | Método | Endpoint | Descripción | Auth |
 |--------|----------|-------------|------|
-| `POST` | `/users` | Registrar usuario | No |
-| `GET` | `/users?limit=50` | Listar usuarios (máx 100k) | Sí |
-| `GET` | `/users/:id` | Usuario por ID | Sí |
+| `POST` | `/v1/users` | Registrar usuario | No |
+| `GET` | `/v1/users?limit=50` | Listar usuarios (máx 100k) | Sí |
+| `GET` | `/v1/users/:id` | Usuario por ID | Sí |
 
 ### Health
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `GET` | `/health` | Health check completo |
-| `GET` | `/health/ping` | Ping básico |
+| `GET` | `/v1/health` | Health check completo |
+| `GET` | `/v1/health/ping` | Ping básico |
 
 ---
 
@@ -388,15 +490,28 @@ npm install
 
 # Copiar archivo de configuración
 cp .env.example .env
-
-# Editar .env con tus credenciales
+# Editar .env con tus credenciales (JWT_SECRET, PORT)
 ```
 
-### Ejecución
+### Ejecución con Docker (recomendado)
 
 ```bash
-# Desarrollo (proceso único, hot reload)
+# Levantar API + MongoDB + Redis
+npm run docker
+
+# La API estará disponible en:
+# http://localhost:4202/v1/...
+# http://localhost:4202/api  (Swagger)
+```
+
+### Ejecución local
+
+```bash
+# Desarrollo con hot reload (detiene el contenedor API de Docker)
 npm run start:dev
+
+# Sin hot reload
+npm start
 
 # Producción (clustering automático)
 NODE_ENV=production npm run start:prod
@@ -412,7 +527,7 @@ npm run build
 Documentación interactiva disponible en `/api`:
 
 ```
-http://localhost:port/api
+http://localhost:4202/api
 ```
 
 - Autenticación: click en "Authorize" → pegar token JWT
@@ -438,16 +553,16 @@ Todas las requests se loguean con información del usuario autenticado:
 
 | Dependencia | Versión | Uso |
 |-------------|---------|-----|
-| @nestjs/core | ^10.0.0 | Framework |
-| @nestjs/mongoose | ^10.0.2 | ODM MongoDB |
-| @nestjs/jwt | ^10.2.0 | Tokens JWT |
-| @nestjs/passport | ^11.0.5 | Autenticación |
+| @nestjs/core | ^11.0.0 | Framework |
+| @nestjs/mongoose | ^11.0.0 | ODM MongoDB |
+| @nestjs/jwt | ^11.0.0 | Tokens JWT |
+| @nestjs/passport | ^11.0.0 | Autenticación |
 | @nestjs/throttler | ^6.5.0 | Rate limiting |
 | @nestjs/swagger | ^11.2.6 | Documentación |
-| @nest-lab/throttler-storage-redis | latest | Rate limiting distribuido |
-| ioredis | latest | Cliente Redis |
+| @nest-lab/throttler-storage-redis | ^1.2.0 | Rate limiting distribuido |
+| ioredis | ^5.4.0 | Cliente Redis |
 | bcrypt | ^6.0.0 | Hash de contraseñas |
-| class-validator | ^0.15.1 | Validación de DTOs |
+| class-validator | ^0.14.1 | Validación de DTOs |
 | compression | ^1.8.1 | Compresión gzip |
 
 ---
