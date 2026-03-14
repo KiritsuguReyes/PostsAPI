@@ -34,7 +34,7 @@ export class AuthController {
         access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
         user: {
           id: '65fd1234567890abcdef1234',
-          email: 'usuario@test.com',
+          email: 'alvaro@reyes.com',
           name: 'Juan Pérez',
           role: 'user'
         }

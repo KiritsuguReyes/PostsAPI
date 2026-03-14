@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class LoginDto {
   @ApiProperty({
     description: 'Email del usuario',
-    example: 'usuario@test.com',
+    example: 'alvaro@test.com',
     format: 'email'
   })
   @IsEmail({}, { message: 'El email debe tener un formato válido' })
@@ -13,7 +13,7 @@ export class LoginDto {
 
   @ApiProperty({
     description: 'Contraseña del usuario',
-    example: 'password123',
+    example: '12356789',
     minLength: 6
   })
   @IsString()
@@ -32,8 +32,8 @@ export class LoginResponseDto {
     description: 'Información del usuario autenticado',
     example: {
       id: '65fd1234567890abcdef1234',
-      email: 'usuario@test.com',
-      name: 'Juan Pérez',
+      email: 'alvaro@test.com',
+      name: 'Alvaro Reyes',
       role: 'user'
     }
   })
