@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Comment, CommentDocument } from './schemas/comment.schema';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Injectable()
 export class CommentsService {
@@ -80,6 +81,26 @@ export class CommentsService {
         hasPrevPage: page > 1,
       }
     };
+  }
+
+  async findOne(id: string): Promise<Comment> {
+    const comment = await this.commentModel.findById(id).exec();
+    if (!comment) {
+      throw new NotFoundException(`Comment with ID ${id} not found`);
+    }
+    return comment;
+  }
+
+  async update(id: string, updateCommentDto: UpdateCommentDto): Promise<Comment> {
+    const updatedComment = await this.commentModel
+      .findByIdAndUpdate(id, updateCommentDto, { new: true })
+      .exec();
+    
+    if (!updatedComment) {
+      throw new NotFoundException(`Comment with ID ${id} not found`);
+    }
+    
+    return updatedComment;
   }
 
   async remove(id: string): Promise<void> {
