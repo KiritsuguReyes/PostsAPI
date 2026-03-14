@@ -1,9 +1,26 @@
-export class ApiResponse {
-  static success(data: any, message = 'OK') {
-    return { success: true, message, data };
+export class ApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  data?: T;
+  error?: any;
+  timestamp: string;
+
+  constructor(success: boolean, message: string, data?: T, error?: any) {
+    this.success = success;
+    this.message = message;
+    this.data = data;
+    this.error = error;
+    this.timestamp = new Date().toISOString();
   }
 
-  static error(message: string, status = 400) {
-    return { success: false, message, status };
+  static success<T>(data: T, message: string = 'Operación exitosa'): ApiResponse<T> {
+    return new ApiResponse(true, message, data);
+  }
+
+  static error(message: string, statusCode?: number, details?: any): ApiResponse {
+    return new ApiResponse(false, message, null, {
+      statusCode,
+      details,
+    });
   }
 }
