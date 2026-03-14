@@ -15,6 +15,7 @@ import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ApiResponse } from '../common/responses/api-response';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -105,5 +106,24 @@ export class UsersController {
   ) {
     const user = await this.usersService.update(id, updateUserDto);
     return ApiResponse.success(user, 'Usuario actualizado exitosamente');
+  }
+
+  @Put(':id/password')
+  @ApiOperation({
+    summary: 'Cambiar contraseña de usuario',
+    description: 'Cambia la contraseña de un usuario específico. La nueva contraseña será hasheada automáticamente. Requiere autenticación JWT.',
+  })
+  @ApiBearerAuth('JWT-auth')
+  @SwaggerApiResponse({ status: 200, description: 'Contraseña actualizada exitosamente' })
+  @SwaggerApiResponse({ status: 401, description: 'No autorizado - Token JWT requerido' })
+  @SwaggerApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @SwaggerApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Param('id') id: string,
+    @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
+  ) {
+    const user = await this.usersService.changePassword(id, changePasswordDto.password);
+    return ApiResponse.success(user, 'Contraseña actualizada exitosamente');
   }
 }

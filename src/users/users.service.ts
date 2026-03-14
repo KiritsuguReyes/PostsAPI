@@ -67,6 +67,20 @@ export class UsersService {
     return this.userModel.findOne({ email }).exec();
   }
 
+  async changePassword(id: string, newPassword: string): Promise<User> {
+    const user = await this.userModel.findById(id);
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+
+    // Actualizar solo la contraseña - el hook pre('save') se encargará del hashing
+    user.password = newPassword;
+    await user.save();
+
+    // Invalidar caché
+    await this.cache.deletePattern(`${COLLECTION}:*`);
+    
+    return await this.userModel.findById(id).select('-password').exec();
+  }
+
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.findByEmail(email);
     if (user && await user.comparePassword(password)) {

@@ -20,14 +20,4 @@ export class UpdateUserDto {
   @IsString()
   @MinLength(2, { message: 'El nombre debe tener al menos 2 caracteres' })
   name?: string;
-
-  @ApiPropertyOptional({
-    description: 'Nueva contraseña',
-    example: 'newpassword123',
-    minLength: 6,
-  })
-  @IsOptional()
-  @IsString()
-  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
-  password?: string;
 }
