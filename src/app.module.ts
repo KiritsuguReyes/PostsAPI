@@ -2,12 +2,17 @@ import { Logger, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { JwtClaimsUtil } from './common/utils/jwt-claims.util';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { HealthController } from './common/health/health.controller';
 
 @Module({
   imports: [
@@ -19,9 +24,19 @@ import { AuthModule } from './auth/auth.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
+        // Optimizaciones de conexión para alta carga
+        maxPoolSize: 50,     // Máximo 50 conexiones concurrentes
+        minPoolSize: 5,      // Mínimo 5 conexiones activas
+        maxIdleTimeMS: 30000,// 30s timeout para conexiones idle
+        serverSelectionTimeoutMS: 5000, // 5s timeout para seleccionar servidor
+        socketTimeoutMS: 45000, // 45s socket timeout
       }),
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,    // 60 segundos
+      limit: 100,    // 100 requests por minuto por IP
+    }]),
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],
@@ -36,8 +51,15 @@ import { AuthModule } from './auth/auth.module';
     UsersModule,
     AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, HealthController],
+  providers: [
+    AppService,
+    JwtClaimsUtil,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+  ],
 })
 export class AppModule implements OnModuleInit {
   private readonly logger = new Logger(AppModule.name);
