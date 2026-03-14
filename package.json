@@ -19,7 +19,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:testing": "jest --config ./jest-testing.json",
+    "test:testing:watch": "jest --config ./jest-testing.json --watch",
+    "test:testing:cov": "jest --config ./jest-testing.json --coverage",
+    "test:all": "jest --config ./jest-testing.json"
   },
   "dependencies": {
     "@nest-lab/throttler-storage-redis": "^1.2.0",
