@@ -4,6 +4,7 @@ import * as compression from 'compression';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import open from 'open';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -69,6 +70,16 @@ async function bootstrap() {
   
   console.log(`Application is running on: http://localhost:${port}`);
   console.log(`Swagger documentation available at: http://localhost:${port}/api`);
+  
+  // Abrir Swagger UI automáticamente en el navegador
+  const swaggerUrl = `http://localhost:${port}/api`;
+  console.log(`🚀 Opening Swagger UI in browser: ${swaggerUrl}`);
+  
+  try {
+    await open(swaggerUrl);
+  } catch (error) {
+    console.log('⚠️  Could not open browser automatically. Please visit the URL manually.');
+  }
 }
 
 bootstrap();

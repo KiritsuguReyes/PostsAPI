@@ -38,6 +38,7 @@
     "class-validator": "^0.15.1",
     "compression": "^1.8.1",
     "mongoose": "^8.0.3",
+    "open": "^11.0.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
