@@ -35,7 +35,6 @@ export class CommentsService {
     page: number = 1, 
     limit: number = 10, 
     search?: string,
-    name?: string,
     postId?: string,
     sortBy: string = 'createdAt',
     sortOrder: 'asc' | 'desc' = 'desc'
@@ -48,10 +47,6 @@ export class CommentsService {
     if (search) {
       // Usa el índice de texto compuesto (name + body) para rendimiento óptimo
       filter.$text = { $search: search };
-    }
-    
-    if (name) {
-      filter.name = { $regex: name, $options: 'i' };
     }
     
     if (postId) {

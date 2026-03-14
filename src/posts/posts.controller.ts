@@ -125,7 +125,13 @@ export class PostsController {
   @Get('paginated')
   @ApiOperation({ 
     summary: 'Obtener posts paginados', 
-    description: 'Obtiene posts con paginación y filtros dinámicos por búsqueda, autor, ordenamiento' 
+    description: 'Obtiene posts con paginación y filtros dinámicos por búsqueda y autor opcional' 
+  })
+  @ApiQuery({
+    name: 'author',
+    required: false,
+    description: 'Nombre del autor para filtrar posts específicos',
+    example: 'Juan Pérez'
   })
   @SwaggerApiResponse({ 
     status: 200, 

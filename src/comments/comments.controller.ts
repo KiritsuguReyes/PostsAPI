@@ -12,7 +12,7 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -67,7 +67,13 @@ export class CommentsController {
   @Get('paginated')
   @ApiOperation({ 
     summary: 'Obtener comentarios paginados', 
-    description: 'Obtiene comentarios con paginación y filtros dinámicos por búsqueda, nombre, postId' 
+    description: 'Obtiene comentarios con paginación y filtros dinámicos por búsqueda y postId opcional' 
+  })
+  @ApiQuery({
+    name: 'postId',
+    required: false,
+    description: 'ID del post para filtrar comentarios específicos',
+    example: '507f1f77bcf86cd799439011'
   })
   @SwaggerApiResponse({ 
     status: 200, 
@@ -75,14 +81,12 @@ export class CommentsController {
   })
   async getAllLimit(
     @Query(ValidationPipe) paginationDto: PaginationDto, 
-    @Query('name') name?: string,
     @Query('postId') postId?: string
   ) {
     const result = await this.commentsService.getAllLimit(
       paginationDto.page,
       paginationDto.limit,
       paginationDto.search,
-      name,
       postId,
       paginationDto.sortBy || 'createdAt',
       paginationDto.sortOrder
