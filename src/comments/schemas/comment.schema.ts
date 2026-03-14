@@ -7,16 +7,16 @@ export type CommentDocument = Comment & Document;
   timestamps: true,
 })
 export class Comment {
-  @Prop({ type: Types.ObjectId, required: true, ref: 'Post' })
+  @Prop({ type: Types.ObjectId, required: true, ref: 'Post', index: true })
   postId: Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   name: string;
 
   @Prop({ required: true, match: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/ })
   email: string;
 
-  @Prop({ required: true, minlength: 5 })
+  @Prop({ required: true, minlength: 5, text: true })
   body: string;
 
   createdAt: Date;

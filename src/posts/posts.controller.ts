@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Put,
+  Query,
   ValidationPipe,
   HttpCode,
   HttpStatus,
@@ -16,6 +17,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ApiResponse } from '../common/responses/api-response';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard)
@@ -43,6 +45,19 @@ export class PostsController {
   async findAll() {
     const posts = await this.postsService.findAll();
     return ApiResponse.success(posts, 'Posts obtenidos exitosamente');
+  }
+
+  @Get('paginated')
+  async getAllLimit(@Query(ValidationPipe) paginationDto: PaginationDto, @Query('author') author?: string) {
+    const result = await this.postsService.getAllLimit(
+      paginationDto.page,
+      paginationDto.limit,
+      paginationDto.search,
+      author,
+      paginationDto.sortBy || 'createdAt',
+      paginationDto.sortOrder
+    );
+    return ApiResponse.success(result, 'Posts paginados obtenidos exitosamente');
   }
 
   @Get(':id')

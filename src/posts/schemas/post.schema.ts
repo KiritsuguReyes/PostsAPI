@@ -7,13 +7,13 @@ export type PostDocument = Post & Document;
   timestamps: true,
 })
 export class Post {
-  @Prop({ required: true, minlength: 3 })
+  @Prop({ required: true, index: true, minlength: 3 })
   title: string;
 
-  @Prop({ required: true, minlength: 10 })
+  @Prop({ required: true, text: true, minlength: 10 })
   body: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   author: string;
 
   createdAt: Date;

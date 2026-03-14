@@ -15,6 +15,7 @@ import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { ApiResponse } from '../common/responses/api-response';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('comments')
 @UseGuards(JwtAuthGuard)
@@ -36,6 +37,24 @@ export class CommentsController {
     
     const comments = await this.commentsService.findByPostId(postId);
     return ApiResponse.success(comments, 'Comentarios obtenidos exitosamente');
+  }
+
+  @Get('paginated')
+  async getAllLimit(
+    @Query(ValidationPipe) paginationDto: PaginationDto, 
+    @Query('name') name?: string,
+    @Query('postId') postId?: string
+  ) {
+    const result = await this.commentsService.getAllLimit(
+      paginationDto.page,
+      paginationDto.limit,
+      paginationDto.search,
+      name,
+      postId,
+      paginationDto.sortBy || 'createdAt',
+      paginationDto.sortOrder
+    );
+    return ApiResponse.success(result, 'Comentarios paginados obtenidos exitosamente');
   }
 
   @Delete(':id')

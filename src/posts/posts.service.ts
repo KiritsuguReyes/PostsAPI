@@ -17,7 +17,62 @@ export class PostsService {
   }
 
   async findAll(): Promise<Post[]> {
-    return this.postModel.find().sort({ createdAt: -1 }).exec();
+    return this.postModel.find().exec();
+  }
+
+  async getAllLimit(
+    page: number = 1, 
+    limit: number = 10, 
+    search?: string,
+    author?: string,
+    sortBy: string = 'createdAt',
+    sortOrder: 'asc' | 'desc' = 'desc'
+  ) {
+    const skip = (page - 1) * limit;
+    
+    // Construir filtro dinámico
+    const filter: any = {};
+    
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { body: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (author) {
+      filter.author = { $regex: author, $options: 'i' };
+    }
+    
+    // Configurar ordenamiento
+    const sort: any = {};
+    sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    
+    // Ejecutar consultas en paralelo para mejor performance
+    const [data, total] = await Promise.all([
+      this.postModel
+        .find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .select('title body author createdAt updatedAt') // Solo campos necesarios
+        .exec(),
+      this.postModel.countDocuments(filter)
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      }
+    };
   }
 
   async findOne(id: string): Promise<Post> {

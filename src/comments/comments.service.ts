@@ -22,6 +22,66 @@ export class CommentsService {
       .exec();
   }
 
+  async getAllLimit(
+    page: number = 1, 
+    limit: number = 10, 
+    search?: string,
+    name?: string,
+    postId?: string,
+    sortBy: string = 'createdAt',
+    sortOrder: 'asc' | 'desc' = 'desc'
+  ) {
+    const skip = (page - 1) * limit;
+    
+    // Construir filtro dinámico
+    const filter: any = {};
+    
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { body: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (name) {
+      filter.name = { $regex: name, $options: 'i' };
+    }
+    
+    if (postId) {
+      filter.postId = postId;
+    }
+    
+    // Configurar ordenamiento
+    const sort: any = {};
+    sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    
+    // Ejecutar consultas en paralelo para mejor performance
+    const [data, total] = await Promise.all([
+      this.commentModel
+        .find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .select('postId name email body createdAt updatedAt') // Solo campos necesarios
+        .exec(),
+      this.commentModel.countDocuments(filter)
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+    
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      }
+    };
+  }
+
   async remove(id: string): Promise<void> {
     const result = await this.commentModel.findByIdAndDelete(id).exec();
     if (!result) {
