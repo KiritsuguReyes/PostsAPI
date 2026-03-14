@@ -89,7 +89,7 @@ export class CommentsController {
     description: 'Comentarios paginados obtenidos exitosamente' 
   })
   async getAllLimit(
-    @Query(ValidationPipe) paginationDto: PaginationDto, 
+    @Query(ValidationPipe) paginationDto: PaginationDto,
     @Query('postId') postId?: string
   ) {
     const result = await this.commentsService.getAllLimit(
