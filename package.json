@@ -12,7 +12,7 @@
     "start:dev": "docker-compose stop api & nest start --watch",
     "start:debug": "docker-compose stop api & nest start --debug --watch",
     "start:prod": "node dist/main",
-    "docker": "docker-compose up -d",
+    "docker": "docker-compose up -d --build",
     "docker:down": "docker-compose down",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",

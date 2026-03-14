@@ -17,7 +17,7 @@ services:
       - PORT=3000
       - MONGODB_URI=mongodb://mongo:27017/postsdb
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-in-production}
+      - JWT_SECRET=${JWT_SECRET:-1234564789A}
     depends_on:
       mongo:
         condition: service_healthy
