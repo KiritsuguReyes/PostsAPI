@@ -1,0 +1,54 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# DOCKERIGNORE - Archivos que NO se copian a la imagen Docker
+# Reduce tamaño de imagen y tiempo de build
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Dependencias (se instalan dentro del contenedor)
+node_modules
+npm-debug.log
+
+# Build output (se genera dentro del contenedor)
+dist
+
+# Environment files (los secretos van por variables de entorno)
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Testing
+coverage
+.nyc_output
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+!README.md
+
+# Misc
+.editorconfig
+.prettierrc
+.eslintrc.js
+nest-cli.json
+tsconfig.build.json
