@@ -22,7 +22,7 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Comments')
 @ApiBearerAuth('JWT-auth')
-@Controller('comments')
+@Controller({ path: 'comments', version: '1' })
 @UseGuards(JwtAuthGuard)
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}

@@ -6,7 +6,7 @@ import { ApiResponse } from '../responses/api-response';
 import { RedisCacheService } from '../cache/redis-cache.service';
 
 @ApiTags('Health')
-@Controller('health')
+@Controller({ path: 'health', version: '1' })
 export class HealthController {
   constructor(
     @InjectConnection() private readonly mongoConnection: Connection,

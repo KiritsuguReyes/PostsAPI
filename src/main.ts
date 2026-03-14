@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as compression from 'compression';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
@@ -13,6 +13,10 @@ async function bootstrap() {
   
   // Comprimir responses para reducir bandwidth
   app.use(compression());
+
+  // Versionado URI: /v1/posts, /v2/posts, etc.
+  // Permite añadir nuevas versiones sin romper clientes que usen versiones anteriores
+  app.enableVersioning({ type: VersioningType.URI });
   
   // Aplicar Global Exception Filter
   app.useGlobalFilters(new GlobalExceptionFilter());
@@ -35,7 +39,7 @@ async function bootstrap() {
   // Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('Posts API')
-    .setDescription('API REST para gestión de Posts, Comentarios y Usuarios con autenticación JWT')
+    .setDescription('API REST para gestión de Posts, Comentarios y Usuarios con autenticación JWT\n\n**Versión actual:** v1\n\nTodos los endpoints tienen el prefijo `/v1/`. Ejemplo: `GET /v1/posts`')
     .setVersion('1.0')
     .addBearerAuth(
       {

@@ -14,7 +14,7 @@ import { LoginDto } from './dto/login.dto';
 import { ApiResponse } from '../common/responses/api-response';
 
 @ApiTags('Auth')
-@Controller('auth')
+@Controller({ path: 'auth', version: '1' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
