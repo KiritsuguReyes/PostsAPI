@@ -57,7 +57,7 @@ export class CommentsService {
     const sort: any = {};
     sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
     
-    const key = `${COLLECTION}:paginated:${page}:${limit}:${search ?? ''}:${name ?? ''}:${postId ?? ''}:${sortBy}:${sortOrder}`;
+    const key = `${COLLECTION}:paginated:${page}:${limit}:${search ?? ''}:${postId ?? ''}:${sortBy}:${sortOrder}`;
 
     return this.cache.getOrSet(
       key,
