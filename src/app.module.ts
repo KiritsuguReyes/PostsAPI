@@ -4,8 +4,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
@@ -50,9 +48,8 @@ import { HealthController } from './common/health/health.controller';
     UsersModule,
     AuthModule,
   ],
-  controllers: [AppController, HealthController],
+  controllers: [HealthController],
   providers: [
-    AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,

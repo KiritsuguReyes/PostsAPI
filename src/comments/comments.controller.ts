@@ -5,31 +5,56 @@ import {
   Body,
   Param,
   Delete,
+  Put,
   Query,
   ValidationPipe,
   HttpCode,
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 import { ApiResponse } from '../common/responses/api-response';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
+@ApiTags('Comments')
+@ApiBearerAuth('JWT-auth')
 @Controller('comments')
 @UseGuards(JwtAuthGuard)
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @Post()
+  @ApiOperation({ 
+    summary: 'Crear nuevo comentario', 
+    description: 'Crea un comentario en un post específico' 
+  })
+  @SwaggerApiResponse({ 
+    status: 201, 
+    description: 'Comentario creado exitosamente' 
+  })
   @HttpCode(HttpStatus.CREATED)
   async create(@Body(ValidationPipe) createCommentDto: CreateCommentDto) {
     const comment = await this.commentsService.create(createCommentDto);
     return ApiResponse.success(comment, 'Comentario creado exitosamente');
   }
 
-  @Get()
+  @Get('by-post')
+  @ApiOperation({ 
+    summary: 'Obtener todos los comentarios de un post', 
+    description: 'Obtiene todos los comentarios que pertenecen a un post específico usando el postId como query parameter' 
+  })
+  @SwaggerApiResponse({ 
+    status: 200, 
+    description: 'Comentarios del post obtenidos exitosamente' 
+  })
+  @SwaggerApiResponse({ 
+    status: 400, 
+    description: 'Parámetro postId es requerido' 
+  })
   async findByPostId(@Query('postId') postId: string) {
     if (!postId) {
       return ApiResponse.error('El parámetro postId es requerido', 400);
@@ -40,6 +65,14 @@ export class CommentsController {
   }
 
   @Get('paginated')
+  @ApiOperation({ 
+    summary: 'Obtener comentarios paginados', 
+    description: 'Obtiene comentarios con paginación y filtros dinámicos por búsqueda, nombre, postId' 
+  })
+  @SwaggerApiResponse({ 
+    status: 200, 
+    description: 'Comentarios paginados obtenidos exitosamente' 
+  })
   async getAllLimit(
     @Query(ValidationPipe) paginationDto: PaginationDto, 
     @Query('name') name?: string,
@@ -57,7 +90,55 @@ export class CommentsController {
     return ApiResponse.success(result, 'Comentarios paginados obtenidos exitosamente');
   }
 
+  @Get(':id')
+  @ApiOperation({ 
+    summary: 'Obtener comentario por ID', 
+    description: 'Obtiene un comentario específico por su ID' 
+  })
+  @SwaggerApiResponse({ 
+    status: 200, 
+    description: 'Comentario obtenido exitosamente' 
+  })
+  @SwaggerApiResponse({ 
+    status: 404, 
+    description: 'Comentario no encontrado' 
+  })
+  async findOne(@Param('id') id: string) {
+    const comment = await this.commentsService.findOne(id);
+    return ApiResponse.success(comment, 'Comentario obtenido exitosamente');
+  }
+
+  @Put(':id')
+  @ApiOperation({ 
+    summary: 'Actualizar comentario', 
+    description: 'Actualiza un comentario existente por su ID' 
+  })
+  @SwaggerApiResponse({ 
+    status: 200, 
+    description: 'Comentario actualizado exitosamente' 
+  })
+  @SwaggerApiResponse({ 
+    status: 404, 
+    description: 'Comentario no encontrado' 
+  })
+  async update(@Param('id') id: string, @Body(ValidationPipe) updateCommentDto: UpdateCommentDto) {
+    const comment = await this.commentsService.update(id, updateCommentDto);
+    return ApiResponse.success(comment, 'Comentario actualizado exitosamente');
+  }
+
   @Delete(':id')
+  @ApiOperation({ 
+    summary: 'Eliminar comentario', 
+    description: 'Elimina un comentario por su ID' 
+  })
+  @SwaggerApiResponse({ 
+    status: 204, 
+    description: 'Comentario eliminado exitosamente' 
+  })
+  @SwaggerApiResponse({ 
+    status: 404, 
+    description: 'Comentario no encontrado' 
+  })
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
     await this.commentsService.remove(id);

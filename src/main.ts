@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import * as compression from 'compression';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
@@ -27,11 +28,47 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
+
+  // Configuración de Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Posts API')
+    .setDescription('API REST para gestión de Posts, Comentarios y Usuarios con autenticación JWT')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Ingresa tu token JWT',
+        in: 'header',
+      },
+      'JWT-auth'
+    )
+    .addTag('Auth', 'Endpoints de autenticación y login')
+    .addTag('Posts', 'CRUD de Posts con paginación y filtros')
+    .addTag('Comments', 'CRUD de Comentarios por posts')
+    .addTag('Users', 'Gestión de usuarios')
+    .addTag('Health', 'Health checks y monitoreo')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document, {
+    customSiteTitle: 'Posts API - Documentación',
+    customCss: '.swagger-ui .topbar { display: none }',
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+    explorer: true,
+    jsonDocumentUrl: 'api/json',  // URL para descargar JSON
+    yamlDocumentUrl: 'api/yaml',  // URL para descargar YAML
+  });
   
   const port = process.env.PORT || 3000;
   await app.listen(port);
   
   console.log(`Application is running on: http://localhost:${port}`);
+  console.log(`Swagger documentation available at: http://localhost:${port}/api`);
 }
 
 bootstrap();

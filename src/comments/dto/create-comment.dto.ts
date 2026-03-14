@@ -1,20 +1,39 @@
 import { IsNotEmpty, IsString, IsEmail, MinLength, IsMongoId } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCommentDto {
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'ID del post al que pertenece el comentario',
+    example: '65fd1234567890abcdef1234'
+  })
   @IsMongoId({ message: 'El ID del post debe ser válido' })
+  @IsNotEmpty()
   postId: string;
 
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Nombre del comentarista',
+    example: 'Juan Pérez'
+  })
   @IsString()
+  @IsNotEmpty()
   name: string;
 
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Email del comentarista',
+    example: 'juan@test.com',
+    format: 'email'
+  })
   @IsEmail({}, { message: 'El email debe tener un formato válido' })
+  @IsNotEmpty()
   email: string;
 
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Contenido del comentario',
+    example: 'Excelente post, muy útil la información compartida!',
+    minLength: 5
+  })
   @IsString()
+  @IsNotEmpty()
   @MinLength(5, { message: 'El comentario debe tener al menos 5 caracteres' })
   body: string;
 }
