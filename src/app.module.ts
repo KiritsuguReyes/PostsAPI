@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HealthController } from './common/health/health.controller';
+import { RedisCacheModule } from './common/cache/redis-cache.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { HealthController } from './common/health/health.controller';
       }),
       inject: [ConfigService],
     }),
+    RedisCacheModule,
     PostsModule,
     CommentsModule,
     UsersModule,

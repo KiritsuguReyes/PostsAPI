@@ -4,21 +4,32 @@ import { Model } from 'mongoose';
 import { Post, PostDocument } from './schemas/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { RedisCacheService } from '../common/cache/redis-cache.service';
+
+const COLLECTION = 'posts';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
+    private readonly cache: RedisCacheService,
   ) {}
 
   async create(createPostDto: CreatePostDto): Promise<Post> {
     const createdPost = new this.postModel(createPostDto);
-    return createdPost.save();
+    const result = await createdPost.save();
+    await this.cache.invalidateCollection(COLLECTION);
+    return result;
   }
 
   async findAll(limit?: number): Promise<Post[]> {
     const cap = Math.min(limit ?? 100_000, 100_000);
-    return this.postModel.find().sort({ createdAt: -1 }).limit(cap).exec();
+    const key = `${COLLECTION}:all:${cap}`;
+    return this.cache.getOrSet(
+      key,
+      () => this.postModel.find().sort({ createdAt: -1 }).limit(cap).exec(),
+      COLLECTION,
+    );
   }
 
   async getAllLimit(
@@ -47,64 +58,75 @@ export class PostsService {
     const sort: any = {};
     sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
     
-    // Ejecutar consultas en paralelo para mejor performance
-    const [data, total] = await Promise.all([
-      this.postModel
-        .find(filter)
-        .sort(sort)
-        .skip(skip)
-        .limit(limit)
-        .select('title body author createdAt updatedAt') // Solo campos necesarios
-        .exec(),
-      this.postModel.countDocuments(filter)
-    ]);
+    const key = `${COLLECTION}:paginated:${page}:${limit}:${search ?? ''}:${author ?? ''}:${sortBy}:${sortOrder}`;
 
-    const totalPages = Math.ceil(total / limit);
-    
-    return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      }
-    };
+    return this.cache.getOrSet(
+      key,
+      async () => {
+        // Ejecutar consultas en paralelo para mejor performance
+        const [data, total] = await Promise.all([
+          this.postModel
+            .find(filter)
+            .sort(sort)
+            .skip(skip)
+            .limit(limit)
+            .select('title body author createdAt updatedAt')
+            .exec(),
+          this.postModel.countDocuments(filter),
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+          data,
+          pagination: {
+            page,
+            limit,
+            total,
+            pages: totalPages,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
+          },
+        };
+      },
+      COLLECTION,
+    );
   }
 
   async findOne(id: string): Promise<Post> {
-    const post = await this.postModel.findById(id).exec();
-    if (!post) {
-      throw new NotFoundException(`Post with ID ${id} not found`);
-    }
-    return post;
+    const key = `${COLLECTION}:one:${id}`;
+    return this.cache.getOrSet(
+      key,
+      async () => {
+        const post = await this.postModel.findById(id).exec();
+        if (!post) throw new NotFoundException(`Post with ID ${id} not found`);
+        return post;
+      },
+      COLLECTION,
+    );
   }
 
   async update(id: string, updatePostDto: UpdatePostDto): Promise<Post> {
-    const updatedPost = await this.postModel.findByIdAndUpdate(
-      id,
-      updatePostDto,
-      { new: true, runValidators: true },
-    ).exec();
+    const updatedPost = await this.postModel
+      .findByIdAndUpdate(id, updatePostDto, { new: true, runValidators: true })
+      .exec();
 
-    if (!updatedPost) {
-      throw new NotFoundException(`Post with ID ${id} not found`);
-    }
+    if (!updatedPost) throw new NotFoundException(`Post with ID ${id} not found`);
+    await this.cache.invalidateCollection(COLLECTION);
     return updatedPost;
   }
 
   async remove(id: string): Promise<void> {
     const result = await this.postModel.findByIdAndDelete(id).exec();
-    if (!result) {
-      throw new NotFoundException(`Post with ID ${id} not found`);
-    }
+    if (!result) throw new NotFoundException(`Post with ID ${id} not found`);
+    await this.cache.invalidateCollection(COLLECTION);
   }
 
   async createBulk(createPostDtos: CreatePostDto[]): Promise<Post[]> {
     try {
-      return await this.postModel.insertMany(createPostDtos);
+      const result = await this.postModel.insertMany(createPostDtos);
+      await this.cache.invalidateCollection(COLLECTION);
+      return result;
     } catch (error) {
       throw new BadRequestException('Error creating bulk posts: ' + error.message);
     }
