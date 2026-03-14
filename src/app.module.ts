@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import Redis from 'ioredis';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
@@ -31,10 +33,24 @@ import { RedisCacheModule } from './common/cache/redis-cache.module';
       }),
       inject: [ConfigService],
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,    // 60 segundos
-      limit: 100,    // 100 requests por minuto por IP
-    }]),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        // Redis compartido entre todas las instancias → rate limiting correcto
+        // en deploys con múltiples workers/pods
+        storage: new ThrottlerStorageRedisService(
+          new Redis(configService.get<string>('REDIS_URL'), {
+            lazyConnect: true,
+            maxRetriesPerRequest: 2,
+          }),
+        ),
+        throttlers: [{
+          ttl: 60000,   // 60 segundos
+          limit: 100,   // 100 requests por minuto por IP (globalizado)
+        }],
+      }),
+    }),
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],

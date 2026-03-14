@@ -5,6 +5,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import open from 'open';
+import * as cluster from 'cluster';
+import * as os from 'os';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -83,4 +85,26 @@ async function bootstrap() {
   }
 }
 
-bootstrap();
+// ── Clustering ────────────────────────────────────────────────────────────────
+// En producción: 1 worker por CPU core, el master solo supervisa y reinicia.
+// En desarrollo: proceso único (debug más sencillo).
+const numCPUs = os.cpus().length;
+const clusterModule = cluster as unknown as import('cluster').Cluster;
+
+if (clusterModule.isPrimary && process.env.NODE_ENV === 'production') {
+  console.log(`🖥️  Master ${process.pid} arrancando ${numCPUs} workers (1 por CPU core)...`);
+
+  for (let i = 0; i < numCPUs; i++) {
+    clusterModule.fork();
+  }
+
+  clusterModule.on('exit', (worker, code, signal) => {
+    console.warn(
+      `⚠️  Worker ${worker.process.pid} terminó (${signal ?? code}). Reiniciando...`,
+    );
+    clusterModule.fork();
+  });
+} else {
+  // Worker en producción o proceso único en desarrollo
+  bootstrap();
+}

@@ -62,19 +62,22 @@ export class RedisCacheService implements OnModuleDestroy {
 
   /** Retorna el timestamp de la última escritura de la colección (0 si no hay registro) */
   async getLastModified(collection: string): Promise<number> {
-    const raw = await this.getRaw(`${collection}:lastModified`);
+    // Prefijo _lm: para que NO coincida con el patrón "collection:*" del SCAN-delete
+    const raw = await this.getRaw(`_lm:${collection}`);
     return raw ? parseInt(raw, 10) : 0;
   }
 
   /**
    * Marca la colección como modificada AHORA.
+   * Usa prefijo "_lm:" para separarlo del namespace de datos ("collection:*"),
+   * evitando que deletePattern lo borre en la invalidación.
    * TTL de 1h: si nadie escribe en 1h, el campo desaparece
    * y el próximo GET tratará el cache como fresco (safe degradation).
    */
   async touchLastModified(collection: string): Promise<void> {
     try {
       await this.client.set(
-        `${collection}:lastModified`,
+        `_lm:${collection}`,
         Date.now().toString(),
         'EX',
         3600,
@@ -177,10 +180,11 @@ export class RedisCacheService implements OnModuleDestroy {
 
   /**
    * Invalidación completa de colección:
-   * 1. Marca `collection:lastModified = ahora` → todos los GETs verán stale
-   * 2. SCAN-delete de `collection:*` → limpia las keys físicamente
+   * 1. Marca `_lm:{collection} = ahora`  → todos los GETs verán stale
+   * 2. SCAN-delete de `{collection}:*`   → limpia las keys de datos físicamente
    *
-   * Ambas operaciones en paralelo para máxima velocidad.
+   * Se ejecutan en paralelo de forma segura porque los namespaces son distintos:
+   * los datos usan "collection:*" y lastModified usa "_lm:collection".
    */
   async invalidateCollection(collection: string): Promise<void> {
     await Promise.all([
