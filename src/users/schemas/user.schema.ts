@@ -32,18 +32,11 @@ export class User {
 export const UserSchema = SchemaFactory.createForClass(User);
 
 // Hash password before saving
-UserSchema.pre('save', async function (next) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const done = next as unknown as (err?: Error) => void;
-  if (!this.isModified('password')) return done();
+UserSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
 
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    done();
-  } catch (error) {
-    done(error as Error);
-  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 // Instance method to compare password

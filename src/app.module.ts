@@ -23,7 +23,7 @@ import { RedisCacheModule } from './common/cache/redis-cache.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
+        uri: process.env.MONGODB_URI || configService.get<string>('MONGODB_URI'),
         // Optimizaciones de conexión para alta carga
         maxPoolSize: 50,     // Máximo 50 conexiones concurrentes
         minPoolSize: 5,      // Mínimo 5 conexiones activas
@@ -40,7 +40,7 @@ import { RedisCacheModule } from './common/cache/redis-cache.module';
         // Redis compartido entre todas las instancias → rate limiting correcto
         // en deploys con múltiples workers/pods
         storage: new ThrottlerStorageRedisService(
-          new Redis(configService.get<string>('REDIS_URL'), {
+          new Redis(process.env.REDIS_URL || configService.get<string>('REDIS_URL'), {
             lazyConnect: true,
             maxRetriesPerRequest: 2,
           }),
@@ -55,7 +55,7 @@ import { RedisCacheModule } from './common/cache/redis-cache.module';
       global: true,
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
+        secret: process.env.JWT_SECRET || configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '8h' },
       }),
       inject: [ConfigService],
