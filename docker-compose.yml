@@ -29,7 +29,7 @@ services:
 
   # ─── MongoDB ────────────────────────────────────────────────────────────────
   mongo:
-    image: mongo:8
+    image: mongo:7
     container_name: posts-mongo
     ports:
       - "27017:27017"
@@ -47,7 +47,7 @@ services:
 
   # ─── Redis ──────────────────────────────────────────────────────────────────
   redis:
-    image: redis:8-alpine
+    image: redis:7-alpine
     container_name: posts-redis
     ports:
       - "6379:6379"
