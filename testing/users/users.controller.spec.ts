@@ -15,6 +15,7 @@ const mockUsersService = {
   findAll: jest.fn(),
   findOne: jest.fn(),
   update: jest.fn(),
+  changePassword: jest.fn(),
 };
 
 describe('UsersController', () => {
@@ -90,6 +91,21 @@ describe('UsersController', () => {
       expect(result).toBeInstanceOf(ApiResponse);
       expect(result.success).toBe(true);
       expect((result.data as any).name).toBe('Updated Name');
+    });
+  });
+
+  describe('changePassword()', () => {
+    it('should change password and return ApiResponse.success', async () => {
+      const changePasswordDto = { password: 'newSecurePassword123' };
+      const updatedUser = { ...mockUser };
+      mockUsersService.changePassword.mockResolvedValue(updatedUser);
+
+      const result = await controller.changePassword('507f1f77bcf86cd799439033', changePasswordDto as any);
+
+      expect(service.changePassword).toHaveBeenCalledWith('507f1f77bcf86cd799439033', 'newSecurePassword123');
+      expect(result).toBeInstanceOf(ApiResponse);
+      expect(result.success).toBe(true);
+      expect(result.message).toBe('Contraseña actualizada exitosamente');
     });
   });
 });

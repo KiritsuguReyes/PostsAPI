@@ -87,13 +87,12 @@ describe('CommentsController', () => {
       mockCommentsService.getAllLimit.mockResolvedValue(paginatedResult);
 
       const paginationDto = { page: 1, limit: 10, search: undefined, sortBy: undefined, sortOrder: undefined } as any;
-      const result = await controller.getAllLimit(paginationDto, undefined, undefined);
+      const result = await controller.getAllLimit(paginationDto, undefined);
 
       expect(service.getAllLimit).toHaveBeenCalledWith(
         paginationDto.page,
         paginationDto.limit,
         paginationDto.search,
-        undefined,
         undefined,
         'createdAt',
         paginationDto.sortOrder,
@@ -102,14 +101,14 @@ describe('CommentsController', () => {
       expect(result.data).toEqual(paginatedResult);
     });
 
-    it('should pass name and postId filters when provided', async () => {
+    it('should pass postId filter when provided', async () => {
       mockCommentsService.getAllLimit.mockResolvedValue({});
 
       const paginationDto = { page: 1, limit: 5, sortBy: 'createdAt' } as any;
-      await controller.getAllLimit(paginationDto, 'Alice', '507f1f77bcf86cd799439011');
+      await controller.getAllLimit(paginationDto, '507f1f77bcf86cd799439011');
 
       expect(service.getAllLimit).toHaveBeenCalledWith(
-        1, 5, undefined, 'Alice', '507f1f77bcf86cd799439011', 'createdAt', undefined,
+        1, 5, undefined, '507f1f77bcf86cd799439011', 'createdAt', undefined,
       );
     });
   });
