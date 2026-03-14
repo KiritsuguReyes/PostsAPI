@@ -137,10 +137,11 @@ describe('CommentsService', () => {
       model.countDocuments = jest.fn().mockResolvedValue(1);
       mockRedisCacheService.getOrSet.mockImplementation(async (_key, factory) => factory());
 
-      const result = await service.getAllLimit(1, 10, '', 'Reviewer');
+      const postId = '507f1f77bcf86cd799439011';
+      const result = await service.getAllLimit(1, 10, '', postId);
 
       expect(result.data).toEqual([mockComment]);
-      expect(model.find).toHaveBeenCalledWith(expect.objectContaining({ name: { $regex: 'Reviewer', $options: 'i' } }));
+      expect(model.find).toHaveBeenCalledWith(expect.objectContaining({ postId }));
     });
   });
 

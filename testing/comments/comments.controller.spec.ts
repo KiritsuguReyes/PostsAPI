@@ -3,6 +3,10 @@ import { CommentsController } from '../../src/comments/comments.controller';
 import { CommentsService } from '../../src/comments/comments.service';
 import { ApiResponse } from '../../src/common/responses/api-response';
 
+const mockReq = {
+  user: { _id: 'user123', name: 'Test User', email: 'test@test.com', role: 'user' },
+} as any;
+
 const mockComment = {
   _id: '507f1f77bcf86cd799439022',
   postId: '507f1f77bcf86cd799439011',
@@ -47,13 +51,31 @@ describe('CommentsController', () => {
         email: 'test@test.com',
         body: 'A valid comment',
       };
-      mockCommentsService.create.mockResolvedValue({ ...dto, _id: 'cid' });
+      mockCommentsService.create.mockResolvedValue({ ...dto, _id: 'cid', userId: 'user123' });
 
-      const result = await controller.create(dto as any);
+      const result = await controller.create(mockReq, dto as any);
 
-      expect(service.create).toHaveBeenCalledWith(dto);
+      expect(service.create).toHaveBeenCalledWith(
+        expect.objectContaining({ ...dto, userId: 'user123' }),
+      );
       expect(result).toBeInstanceOf(ApiResponse);
       expect(result.success).toBe(true);
+    });
+
+    it('should inject userId, name and email from claims when provided', async () => {
+      const dto = {
+        postId: '507f1f77bcf86cd799439011',
+        name: '',
+        email: '',
+        body: 'A valid comment',
+      };
+      mockCommentsService.create.mockResolvedValue({ ...dto, _id: 'cid' });
+
+      await controller.create(mockReq, dto as any);
+
+      expect(service.create).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: 'user123', name: 'Test User', email: 'test@test.com' }),
+      );
     });
   });
 

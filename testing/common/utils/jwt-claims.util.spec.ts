@@ -40,7 +40,15 @@ describe('JwtClaimsUtil', () => {
   });
 
   describe('getUserId()', () => {
-    it('should return userId from payload.sub', () => {
+    it('should return userId from _id (Mongoose document)', () => {
+      const req: MockRequest = { user: { _id: { toString: () => 'mongo-id-123' }, name: 'Test', email: 'a@a.com', role: 'user' } };
+
+      const result = JwtClaimsUtil.getUserId(req as any);
+
+      expect(result).toBe('mongo-id-123');
+    });
+
+    it('should return userId from sub when _id is absent', () => {
       const req: MockRequest = { user: { sub: 'uid-abc-123' } };
 
       const result = JwtClaimsUtil.getUserId(req as any);
@@ -48,18 +56,44 @@ describe('JwtClaimsUtil', () => {
       expect(result).toBe('uid-abc-123');
     });
 
-    it('should return undefined when no sub claim', () => {
+    it('should return null when neither sub nor _id exist', () => {
       const req: MockRequest = { user: { email: 'user@example.com' } };
 
       const result = JwtClaimsUtil.getUserId(req as any);
 
-      expect(result).toBeUndefined();
+      expect(result).toBeNull();
     });
 
     it('should return null when user is not authenticated', () => {
       const req: MockRequest = {};
 
       const result = JwtClaimsUtil.getUserId(req as any);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getName()', () => {
+    it('should return name from user object', () => {
+      const req: MockRequest = { user: { _id: 'uid', name: 'Juan Pérez', email: 'juan@test.com', role: 'user' } };
+
+      const result = JwtClaimsUtil.getName(req as any);
+
+      expect(result).toBe('Juan Pérez');
+    });
+
+    it('should return null when name is not present', () => {
+      const req: MockRequest = { user: { _id: 'uid', email: 'juan@test.com' } };
+
+      const result = JwtClaimsUtil.getName(req as any);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when user is not authenticated', () => {
+      const req: MockRequest = {};
+
+      const result = JwtClaimsUtil.getName(req as any);
 
       expect(result).toBeNull();
     });

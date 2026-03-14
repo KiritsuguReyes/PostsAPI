@@ -3,6 +3,10 @@ import { PostsController } from '../../src/posts/posts.controller';
 import { PostsService } from '../../src/posts/posts.service';
 import { ApiResponse } from '../../src/common/responses/api-response';
 
+const mockReq = {
+  user: { _id: 'user123', name: 'Test User', email: 'test@test.com', role: 'user' },
+} as any;
+
 const mockPost = {
   _id: '507f1f77bcf86cd799439011',
   title: 'Test Post Title',
@@ -42,14 +46,38 @@ describe('PostsController', () => {
   describe('create()', () => {
     it('should create a post and return ApiResponse.success', async () => {
       const dto = { title: 'New Post', body: 'Body content here', author: 'Author' };
-      mockPostsService.create.mockResolvedValue({ ...dto, _id: 'newid' });
+      mockPostsService.create.mockResolvedValue({ ...dto, _id: 'newid', userId: 'user123' });
 
-      const result = await controller.create(dto as any);
+      const result = await controller.create(mockReq, dto as any);
 
-      expect(service.create).toHaveBeenCalledWith(dto);
+      expect(service.create).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'New Post', body: 'Body content here', author: 'Author', userId: 'user123' }),
+      );
       expect(result).toBeInstanceOf(ApiResponse);
       expect(result.success).toBe(true);
       expect(result.data).toMatchObject(dto);
+    });
+
+    it('should fill author from claims when not provided in dto', async () => {
+      const dto = { title: 'New Post', body: 'Body content here', author: '' };
+      mockPostsService.create.mockResolvedValue({ ...dto, _id: 'newid' });
+
+      await controller.create(mockReq, dto as any);
+
+      expect(service.create).toHaveBeenCalledWith(
+        expect.objectContaining({ author: 'Test User', userId: 'user123' }),
+      );
+    });
+
+    it('should inject userId from request even when author is present', async () => {
+      const dto = { title: 'My Post', body: 'Body content here', author: 'Custom Author' };
+      mockPostsService.create.mockResolvedValue({ ...dto, _id: 'newid' });
+
+      await controller.create(mockReq, dto as any);
+
+      expect(service.create).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: 'user123', author: 'Custom Author' }),
+      );
     });
   });
 
