@@ -16,8 +16,9 @@ export class PostsService {
     return createdPost.save();
   }
 
-  async findAll(): Promise<Post[]> {
-    return this.postModel.find().exec();
+  async findAll(limit?: number): Promise<Post[]> {
+    const cap = Math.min(limit ?? 100_000, 100_000);
+    return this.postModel.find().sort({ createdAt: -1 }).limit(cap).exec();
   }
 
   async getAllLimit(
@@ -34,10 +35,8 @@ export class PostsService {
     const filter: any = {};
     
     if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { body: { $regex: search, $options: 'i' } }
-      ];
+      // Usa el índice de texto compuesto (title + body) para rendimiento óptimo
+      filter.$text = { $search: search };
     }
     
     if (author) {

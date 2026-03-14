@@ -1,10 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse } from '@nestjs/swagger';
 import { ApiResponse } from '../responses/api-response';
 
 @ApiTags('Health')
 @Controller('health')
 export class HealthController {
+  constructor(@InjectConnection() private readonly mongoConnection: Connection) {}
   @Get()
   @ApiOperation({ 
     summary: 'Health check completo', 
@@ -32,15 +35,23 @@ export class HealthController {
     }
   })
   check() {
+    const mongoStates = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+    const mongoState = mongoStates[this.mongoConnection.readyState] ?? 'unknown';
+    const isMongoHealthy = this.mongoConnection.readyState === 1;
+
     const healthData = {
-      status: 'ok',
+      status: isMongoHealthy ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       environment: process.env.NODE_ENV || 'development',
+      database: {
+        status: mongoState,
+        healthy: isMongoHealthy,
+      },
     };
     
-    return ApiResponse.success(healthData, 'Health check exitoso');
+    return ApiResponse.success(healthData, isMongoHealthy ? 'Health check exitoso' : 'Servicio degradado - base de datos no disponible');
   }
 
   @Get('ping')

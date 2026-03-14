@@ -16,10 +16,13 @@ export class Comment {
   @Prop({ required: true, match: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/ })
   email: string;
 
-  @Prop({ required: true, minlength: 5, text: true })
+  @Prop({ required: true, minlength: 5 })
   body: string;
 
   createdAt: Date;
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);
+
+// Índice de texto compuesto para búsquedas eficientes en nombre y contenido
+CommentSchema.index({ name: 'text', body: 'text' });

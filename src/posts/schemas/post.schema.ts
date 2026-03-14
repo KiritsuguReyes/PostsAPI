@@ -10,7 +10,7 @@ export class Post {
   @Prop({ required: true, index: true, minlength: 3 })
   title: string;
 
-  @Prop({ required: true, text: true, minlength: 10 })
+  @Prop({ required: true, minlength: 10 })
   body: string;
 
   @Prop({ required: true, index: true })
@@ -21,3 +21,6 @@ export class Post {
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
+
+// Índice de texto compuesto para búsquedas eficientes en título y contenido
+PostSchema.index({ title: 'text', body: 'text' });

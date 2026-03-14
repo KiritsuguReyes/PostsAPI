@@ -71,14 +71,15 @@ async function bootstrap() {
   console.log(`Application is running on: http://localhost:${port}`);
   console.log(`Swagger documentation available at: http://localhost:${port}/api`);
   
-  // Abrir Swagger UI automáticamente en el navegador
-  const swaggerUrl = `http://localhost:${port}/api`;
-  console.log(`🚀 Opening Swagger UI in browser: ${swaggerUrl}`);
-  
-  try {
-    await open(swaggerUrl);
-  } catch (error) {
-    console.log('⚠️  Could not open browser automatically. Please visit the URL manually.');
+  // Abrir Swagger UI automáticamente en el navegador (solo en entorno de desarrollo)
+  if (process.env.NODE_ENV !== 'production') {
+    const swaggerUrl = `http://localhost:${port}/api`;
+    console.log(`🚀 Opening Swagger UI in browser: ${swaggerUrl}`);
+    try {
+      await open(swaggerUrl);
+    } catch (error) {
+      console.log('⚠️  Could not open browser automatically. Please visit the URL manually.');
+    }
   }
 }
 

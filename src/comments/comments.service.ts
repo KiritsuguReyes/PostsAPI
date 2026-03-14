@@ -38,10 +38,8 @@ export class CommentsService {
     const filter: any = {};
     
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { body: { $regex: search, $options: 'i' } }
-      ];
+      // Usa el índice de texto compuesto (name + body) para rendimiento óptimo
+      filter.$text = { $search: search };
     }
     
     if (name) {

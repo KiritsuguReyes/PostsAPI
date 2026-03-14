@@ -4,12 +4,13 @@ import {
   Post,
   Body,
   Param,
+  Query,
   ValidationPipe,
   HttpCode,
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiResponse } from '../common/responses/api-response';
@@ -43,8 +44,9 @@ export class UsersController {
   @Get()
   @ApiOperation({ 
     summary: 'Obtener todos los usuarios', 
-    description: 'Lista todos los usuarios registrados en el sistema. Requiere autenticación JWT.' 
+    description: 'Lista usuarios registrados con límite opcional (máx 100 000). Requiere autenticación JWT.' 
   })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Máximo de registros a devolver (máx 100 000)', example: 50 })
   @ApiBearerAuth('JWT-auth')
   @SwaggerApiResponse({ 
     status: 200, 
@@ -55,8 +57,9 @@ export class UsersController {
     description: 'No autorizado - Token JWT requerido' 
   })
   @UseGuards(JwtAuthGuard)
-  async findAll() {
-    const users = await this.usersService.findAll();
+  async findAll(@Query('limit') limit?: string) {
+    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+    const users = await this.usersService.findAll(parsedLimit);
     return ApiResponse.success(users, 'Usuarios obtenidos exitosamente');
   }
 

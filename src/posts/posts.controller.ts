@@ -12,7 +12,7 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -109,14 +109,16 @@ export class PostsController {
   @Get()
   @ApiOperation({ 
     summary: 'Obtener todos los posts', 
-    description: 'Obtiene todos los posts disponibles sin paginación' 
+    description: 'Obtiene posts con límite opcional (máx 100 000). Sin parámetro devuelve hasta 100 000 registros.' 
   })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Máximo de registros a devolver (máx 100 000)', example: 50 })
   @SwaggerApiResponse({ 
     status: 200, 
     description: 'Posts obtenidos exitosamente' 
   })
-  async findAll() {
-    const posts = await this.postsService.findAll();
+  async findAll(@Query('limit') limit?: string) {
+    const parsedLimit = limit ? parseInt(limit, 10) : undefined;
+    const posts = await this.postsService.findAll(parsedLimit);
     return ApiResponse.success(posts, 'Posts obtenidos exitosamente');
   }
 

@@ -11,18 +11,21 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    // Verificar si el usuario ya existe
-    const existingUser = await this.userModel.findOne({ email: createUserDto.email });
-    if (existingUser) {
-      throw new ConflictException('El usuario con este email ya existe');
+    try {
+      const createdUser = new this.userModel(createUserDto);
+      return await createdUser.save();
+    } catch (error) {
+      // Captura la race condition de escrituras concurrentes (duplicate key MongoDB)
+      if (error.code === 11000) {
+        throw new ConflictException('El usuario con este email ya existe');
+      }
+      throw error;
     }
-
-    const createdUser = new this.userModel(createUserDto);
-    return createdUser.save();
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().select('-password').sort({ createdAt: -1 }).exec();
+  async findAll(limit?: number): Promise<User[]> {
+    const cap = Math.min(limit ?? 100_000, 100_000);
+    return this.userModel.find().select('-password').sort({ createdAt: -1 }).limit(cap).exec();
   }
 
   async findOne(id: string): Promise<User> {
