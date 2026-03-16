@@ -117,7 +117,7 @@ describe('CommentsController', () => {
         paginationDto.search,
         undefined,
         'createdAt',
-        paginationDto.sortOrder,
+        'desc',
       );
       expect(result).toBeInstanceOf(ApiResponse);
       expect(result.data).toEqual(paginatedResult);
@@ -130,7 +130,7 @@ describe('CommentsController', () => {
       await controller.getAllLimit(paginationDto, '507f1f77bcf86cd799439011');
 
       expect(service.getAllLimit).toHaveBeenCalledWith(
-        1, 5, undefined, '507f1f77bcf86cd799439011', 'createdAt', undefined,
+        1, 5, undefined, '507f1f77bcf86cd799439011', 'createdAt', 'desc',
       );
     });
   });

@@ -208,7 +208,10 @@ describe('PostsService', () => {
     });
 
     it('should throw NotFoundException when post not found (cache miss)', async () => {
-      model.findById = jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
+      model.findById = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(null),
+      });
       mockRedisCacheService.getOrSet.mockImplementation(async (_key, factory) => factory());
 
       await expect(service.findOne('nonexistentid')).rejects.toThrow(NotFoundException);

@@ -39,14 +39,14 @@ describe('CreateCommentDto', () => {
       expect(errors.some((e) => e.property === 'postId')).toBe(true);
     });
 
-    it('should fail when name is missing', async () => {
+    it('should pass when name is omitted', async () => {
       const { errors } = await validateComment({ ...validPayload, name: undefined });
-      expect(errors.some((e) => e.property === 'name')).toBe(true);
+      expect(errors.some((e) => e.property === 'name')).toBe(false);
     });
 
-    it('should fail when email is missing', async () => {
+    it('should pass when email is omitted', async () => {
       const { errors } = await validateComment({ ...validPayload, email: undefined });
-      expect(errors.some((e) => e.property === 'email')).toBe(true);
+      expect(errors.some((e) => e.property === 'email')).toBe(false);
     });
 
     it('should fail when email is invalid format', async () => {
