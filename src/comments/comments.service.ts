@@ -68,7 +68,7 @@ export class CommentsService {
             .sort(sort)
             .skip(skip)
             .limit(limit)
-            .select('postId name email body createdAt updatedAt')
+            .select('postId name email body userId createdAt updatedAt')
             .exec(),
           this.commentModel.countDocuments(filter),
         ]);

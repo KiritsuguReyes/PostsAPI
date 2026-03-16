@@ -70,7 +70,7 @@ export class PostsService {
             .sort(sort)
             .skip(skip)
             .limit(limit)
-            .select('title body author createdAt updatedAt')
+            .select('title body author userId createdAt updatedAt')
             .exec(),
           this.postModel.countDocuments(filter),
         ]);
@@ -98,7 +98,7 @@ export class PostsService {
     return this.cache.getOrSet(
       key,
       async () => {
-        const post = await this.postModel.findById(id).exec();
+        const post = await this.postModel.findById(id).select('title body author userId createdAt updatedAt').exec();
         if (!post) throw new NotFoundException(`Post with ID ${id} not found`);
         return post;
       },

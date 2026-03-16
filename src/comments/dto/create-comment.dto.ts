@@ -15,7 +15,7 @@ export class CreateCommentDto {
     example: 'Juan Pérez'
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @ApiProperty({
@@ -23,8 +23,8 @@ export class CreateCommentDto {
     example: 'juan@test.com',
     format: 'email'
   })
-  @IsEmail({}, { message: 'El email debe tener un formato válido' })
-  @IsNotEmpty()
+  @IsEmail({}, { message: 'El email debe ser válido' })
+  @IsOptional()
   email: string;
 
   @ApiProperty({

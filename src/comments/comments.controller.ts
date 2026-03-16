@@ -89,9 +89,16 @@ export class CommentsController {
     description: 'Comentarios paginados obtenidos exitosamente' 
   })
   async getAllLimit(
-    @Query(ValidationPipe) paginationDto: PaginationDto,
+    @Query() query: any,
     @Query('postId') postId?: string
   ) {
+    // Validar manualmente solo los parámetros de paginación
+    const paginationDto = new PaginationDto();
+    paginationDto.page = query.page ? parseInt(query.page) : 1;
+    paginationDto.limit = query.limit ? parseInt(query.limit) : 10;
+    paginationDto.search = query.search;
+    paginationDto.sortBy = query.sortBy || 'createdAt';
+    paginationDto.sortOrder = query.sortOrder || 'desc';
     const result = await this.commentsService.getAllLimit(
       paginationDto.page,
       paginationDto.limit,
