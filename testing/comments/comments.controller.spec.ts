@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CommentsController } from '../../src/comments/comments.controller';
 import { CommentsService } from '../../src/comments/comments.service';
 import { ApiResponse } from '../../src/common/responses/api-response';
+import { JwtAuthGuard } from '../../src/auth/guards/jwt-auth.guard';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 const mockReq = {
   user: { _id: 'user123', name: 'Test User', email: 'test@test.com', role: 'user' },
@@ -27,12 +29,18 @@ const mockCommentsService = {
 describe('CommentsController', () => {
   let controller: CommentsController;
   let service: typeof mockCommentsService;
+  const mockGuard = { canActivate: jest.fn().mockReturnValue(true) };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CommentsController],
       providers: [{ provide: CommentsService, useValue: mockCommentsService }],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(ThrottlerGuard)
+      .useValue(mockGuard)
+      .compile();
 
     controller = module.get<CommentsController>(CommentsController);
     service = module.get(CommentsService);
