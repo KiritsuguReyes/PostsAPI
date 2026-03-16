@@ -121,29 +121,28 @@ describe('PostsController', () => {
       mockPostsService.getAllLimit.mockResolvedValue(paginatedResult);
 
       const paginationDto = { page: 1, limit: 10, search: undefined, sortBy: undefined, sortOrder: undefined } as any;
-      const author = undefined;
-      const result = await controller.getAllLimit(paginationDto, author);
+      const result = await controller.getAllLimit(paginationDto);
 
       expect(service.getAllLimit).toHaveBeenCalledWith(
         paginationDto.page,
         paginationDto.limit,
         paginationDto.search,
-        author,
         'createdAt',
         paginationDto.sortOrder,
+        undefined,
       );
       expect(result).toBeInstanceOf(ApiResponse);
       expect(result.data).toEqual(paginatedResult);
     });
 
-    it('should pass author filter when provided', async () => {
+    it('should pass userId filter when provided', async () => {
       mockPostsService.getAllLimit.mockResolvedValue({});
 
       const paginationDto = { page: 1, limit: 10, sortBy: 'title' } as any;
-      await controller.getAllLimit(paginationDto, 'Juan');
+      await controller.getAllLimit(paginationDto, 'user123');
 
       expect(service.getAllLimit).toHaveBeenCalledWith(
-        1, 10, undefined, 'Juan', 'title', undefined,
+        1, 10, undefined, 'title', undefined, 'user123',
       );
     });
   });

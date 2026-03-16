@@ -36,9 +36,9 @@ export class PostsService {
     page: number = 1, 
     limit: number = 10, 
     search?: string,
-    author?: string,
     sortBy: string = 'createdAt',
-    sortOrder: 'asc' | 'desc' = 'desc'
+    sortOrder: 'asc' | 'desc' = 'desc',
+    userId?: string,
   ) {
     const skip = (page - 1) * limit;
     
@@ -46,19 +46,19 @@ export class PostsService {
     const filter: any = {};
     
     if (search) {
-      // Usa el índice de texto compuesto (title + body) para rendimiento óptimo
+      // Usa el índice de texto compuesto (title + body + author) para rendimiento óptimo
       filter.$text = { $search: search };
     }
-    
-    if (author) {
-      filter.author = { $regex: author, $options: 'i' };
+
+    if (userId) {
+      filter.userId = userId;
     }
     
     // Configurar ordenamiento
     const sort: any = {};
     sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
     
-    const key = `${COLLECTION}:paginated:${page}:${limit}:${search ?? ''}:${author ?? ''}:${sortBy}:${sortOrder}`;
+    const key = `${COLLECTION}:paginated:${page}:${limit}:${search ?? ''}:${sortBy}:${sortOrder}:${userId ?? ''}`;
 
     return this.cache.getOrSet(
       key,

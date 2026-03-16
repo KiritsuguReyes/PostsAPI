@@ -132,26 +132,20 @@ export class PostsController {
   @Get('paginated')
   @ApiOperation({ 
     summary: 'Obtener posts paginados', 
-    description: 'Obtiene posts con paginación y filtros dinámicos por búsqueda y autor opcional' 
-  })
-  @ApiQuery({
-    name: 'author',
-    required: false,
-    description: 'Nombre del autor para filtrar posts específicos',
-    example: 'Juan Pérez'
+    description: 'Obtiene posts con paginación y filtros dinámicos por búsqueda' 
   })
   @SwaggerApiResponse({ 
     status: 200, 
     description: 'Posts paginados obtenidos exitosamente' 
   })
-  async getAllLimit(@Query(ValidationPipe) paginationDto: PaginationDto, @Query('author') author?: string) {
+  async getAllLimit(@Query(ValidationPipe) paginationDto: PaginationDto, @Query('userId') userId?: string) {
     const result = await this.postsService.getAllLimit(
       paginationDto.page,
       paginationDto.limit,
       paginationDto.search,
-      author,
       paginationDto.sortBy || 'createdAt',
-      paginationDto.sortOrder
+      paginationDto.sortOrder,
+      userId,
     );
     return ApiResponse.success(result, 'Posts paginados obtenidos exitosamente');
   }

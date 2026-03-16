@@ -137,10 +137,10 @@ describe('PostsService', () => {
     it('should build correct cache key with all filters', async () => {
       mockRedisCacheService.getOrSet.mockResolvedValue({});
 
-      await service.getAllLimit(2, 5, 'Angular', 'Juan', 'title', 'asc');
+      await service.getAllLimit(2, 5, 'Angular', 'title', 'asc');
 
       expect(mockRedisCacheService.getOrSet).toHaveBeenCalledWith(
-        'posts:paginated:2:5:Angular:Juan:title:asc',
+        'posts:paginated:2:5:Angular:title:asc:',
         expect.any(Function),
         'posts',
       );

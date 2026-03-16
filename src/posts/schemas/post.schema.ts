@@ -25,5 +25,5 @@ export class Post {
 
 export const PostSchema = SchemaFactory.createForClass(Post);
 
-// Índice de texto compuesto para búsquedas eficientes en título y contenido
-PostSchema.index({ title: 'text', body: 'text' });
+// Índice de texto compuesto para búsquedas eficientes en título, contenido y autor
+PostSchema.index({ title: 'text', body: 'text', author: 'text' });
