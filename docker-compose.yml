@@ -62,10 +62,59 @@ services:
     networks:
       - posts-network
 
+  # ─── Loki (almacén de logs) ──────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:latest
+    container_name: posts-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    networks:
+      - posts-network
+
+  # ─── Promtail (recolector de logs de Docker) ─────────────────────────────────
+  promtail:
+    image: grafana/promtail:latest
+    container_name: posts-promtail
+    volumes:
+      - ./monitoring/promtail/promtail.yml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    restart: unless-stopped
+    networks:
+      - posts-network
+
+  # ─── Grafana (visualización) ─────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: posts-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - loki
+    restart: unless-stopped
+    networks:
+      - posts-network
+
 # ─── Volúmenes persistentes ───────────────────────────────────────────────────
 volumes:
   mongo-data:
   redis-data:
+  loki-data:
+  grafana-data:
 
 # ─── Red interna ──────────────────────────────────────────────────────────────
 networks:
