@@ -21,6 +21,7 @@ const mockPostModel = {
   findById: jest.fn(),
   findByIdAndUpdate: jest.fn(),
   findByIdAndDelete: jest.fn(),
+  deleteMany: jest.fn(),
   insertMany: jest.fn(),
   countDocuments: jest.fn(),
   save: jest.fn(),
@@ -259,6 +260,21 @@ describe('PostsService', () => {
       });
 
       await expect(service.remove('nonexistentid')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('removeBulk()', () => {
+    it('should delete multiple posts and invalidate cache', async () => {
+      model.deleteMany = jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ deletedCount: 2 }),
+      });
+
+      const ids = ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'];
+      const count = await service.removeBulk(ids);
+
+      expect(model.deleteMany).toHaveBeenCalledWith({ _id: { $in: ids } });
+      expect(count).toBe(2);
+      expect(mockRedisCacheService.invalidateCollection).toHaveBeenCalledWith('posts');
     });
   });
 

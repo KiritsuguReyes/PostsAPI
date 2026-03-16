@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post, PostDocument } from './schemas/post.schema';
@@ -9,12 +9,19 @@ import { RedisCacheService } from '../common/cache/redis-cache.service';
 const COLLECTION = 'posts';
 
 @Injectable()
-export class PostsService {
+export class PostsService implements OnApplicationBootstrap {
   constructor(
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
     private readonly cache: RedisCacheService,
   ) {}
 
+  async onApplicationBootstrap(): Promise<void> {
+    // Sincroniza el índice de texto (drop + recreate) si el key-spec cambió.
+    // Necesario cuando se añaden/quitan campos al índice compuesto.
+    await this.postModel.syncIndexes().catch(err =>
+      console.warn('PostsService syncIndexes:', err.message),
+    );
+  }
   async create(createPostDto: CreatePostDto): Promise<Post> {
     const createdPost = new this.postModel(createPostDto);
     const result = await createdPost.save();
@@ -120,6 +127,12 @@ export class PostsService {
     const result = await this.postModel.findByIdAndDelete(id).exec();
     if (!result) throw new NotFoundException(`Post with ID ${id} not found`);
     await this.cache.invalidateCollection(COLLECTION);
+  }
+
+  async removeBulk(ids: string[]): Promise<number> {
+    const result = await this.postModel.deleteMany({ _id: { $in: ids } }).exec();
+    await this.cache.invalidateCollection(COLLECTION);
+    return result.deletedCount;
   }
 
   async createBulk(createPostDtos: CreatePostDto[]): Promise<Post[]> {

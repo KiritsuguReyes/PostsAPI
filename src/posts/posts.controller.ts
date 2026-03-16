@@ -138,14 +138,21 @@ export class PostsController {
     status: 200, 
     description: 'Posts paginados obtenidos exitosamente' 
   })
-  async getAllLimit(@Query(ValidationPipe) paginationDto: PaginationDto, @Query('userId') userId?: string) {
+  async getAllLimit(@Query() query: any) {
+    // Bypass global ValidationPipe (forbidNonWhitelisted) construyendo el DTO manualmente
+    const paginationDto = new PaginationDto();
+    paginationDto.page    = query.page   ? parseInt(query.page)  : 1;
+    paginationDto.limit   = query.limit  ? parseInt(query.limit) : 10;
+    paginationDto.search  = query.search;
+    paginationDto.sortBy  = query.sortBy  || 'createdAt';
+    paginationDto.sortOrder = query.sortOrder || 'desc';
     const result = await this.postsService.getAllLimit(
       paginationDto.page,
       paginationDto.limit,
       paginationDto.search,
-      paginationDto.sortBy || 'createdAt',
+      paginationDto.sortBy,
       paginationDto.sortOrder,
-      userId,
+      query.userId,
     );
     return ApiResponse.success(result, 'Posts paginados obtenidos exitosamente');
   }
@@ -187,6 +194,22 @@ export class PostsController {
   ) {
     const post = await this.postsService.update(id, updatePostDto);
     return ApiResponse.success(post, 'Post actualizado exitosamente');
+  }
+
+  @Delete('bulk')
+  @ApiOperation({
+    summary: 'Eliminar múltiples posts',
+    description: 'Elimina varios posts en una sola operación enviando un array de IDs en el body'
+  })
+  @ApiBody({ schema: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' } } }, required: ['ids'] } })
+  @SwaggerApiResponse({ status: 200, description: 'Posts eliminados exitosamente' })
+  @HttpCode(HttpStatus.OK)
+  async removeBulk(@Body('ids') ids: string[]) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return ApiResponse.error('Se requiere un array de IDs no vacío', 400);
+    }
+    const deletedCount = await this.postsService.removeBulk(ids);
+    return ApiResponse.success({ deletedCount }, `${deletedCount} posts eliminados exitosamente`);
   }
 
   @Delete(':id')

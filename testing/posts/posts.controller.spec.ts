@@ -21,6 +21,7 @@ const mockPostsService = {
   findOne: jest.fn(),
   update: jest.fn(),
   remove: jest.fn(),
+  removeBulk: jest.fn(),
   createBulk: jest.fn(),
 };
 
@@ -120,15 +121,15 @@ describe('PostsController', () => {
       };
       mockPostsService.getAllLimit.mockResolvedValue(paginatedResult);
 
-      const paginationDto = { page: 1, limit: 10, search: undefined, sortBy: undefined, sortOrder: undefined } as any;
-      const result = await controller.getAllLimit(paginationDto);
+      const query = { page: '1', limit: '10' };
+      const result = await controller.getAllLimit(query);
 
       expect(service.getAllLimit).toHaveBeenCalledWith(
-        paginationDto.page,
-        paginationDto.limit,
-        paginationDto.search,
+        1,
+        10,
+        undefined,
         'createdAt',
-        paginationDto.sortOrder,
+        'desc',
         undefined,
       );
       expect(result).toBeInstanceOf(ApiResponse);
@@ -138,11 +139,11 @@ describe('PostsController', () => {
     it('should pass userId filter when provided', async () => {
       mockPostsService.getAllLimit.mockResolvedValue({});
 
-      const paginationDto = { page: 1, limit: 10, sortBy: 'title' } as any;
-      await controller.getAllLimit(paginationDto, 'user123');
+      const query = { page: '1', limit: '10', sortBy: 'title', userId: 'user123' };
+      await controller.getAllLimit(query);
 
       expect(service.getAllLimit).toHaveBeenCalledWith(
-        1, 10, undefined, 'title', undefined, 'user123',
+        1, 10, undefined, 'title', 'desc', 'user123',
       );
     });
   });
@@ -182,6 +183,27 @@ describe('PostsController', () => {
       expect(service.remove).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
       expect(result).toBeInstanceOf(ApiResponse);
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe('removeBulk()', () => {
+    it('should delete multiple posts and return deletedCount', async () => {
+      const ids = ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'];
+      mockPostsService.removeBulk.mockResolvedValue(2);
+
+      const result = await controller.removeBulk(ids);
+
+      expect(service.removeBulk).toHaveBeenCalledWith(ids);
+      expect(result).toBeInstanceOf(ApiResponse);
+      expect(result.success).toBe(true);
+      expect(result.data).toMatchObject({ deletedCount: 2 });
+    });
+
+    it('should return error when ids array is empty', async () => {
+      const result = await controller.removeBulk([]);
+
+      expect(service.removeBulk).not.toHaveBeenCalled();
+      expect((result as any).success).toBe(false);
     });
   });
 });
