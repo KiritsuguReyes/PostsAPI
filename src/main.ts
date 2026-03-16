@@ -9,8 +9,14 @@ import * as cluster from 'cluster';
 import * as os from 'os';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: true,
+  });
+
+  // Aumentar límite de body para carga masiva (bulk)
+  app.use(require('express').json({ limit: '10mb' }));
+  app.use(require('express').urlencoded({ limit: '10mb', extended: true }));
+
   // Comprimir responses para reducir bandwidth
   app.use(compression());
 
