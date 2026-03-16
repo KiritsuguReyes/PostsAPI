@@ -30,9 +30,9 @@ async function bootstrap() {
   
   // CORS optimizado para producción
   app.enableCors({
-    origin: process.env.FRONTEND_URLS?.split(',') || ['http://localhost:3000', 'http://localhost:4200'],
+    origin: process.env.FRONTEND_URLS?.split(',') || ['http://localhost:3000', 'http://localhost:4200', 'https://localhost'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
     credentials: true,
   });
 
