@@ -187,4 +187,3 @@ PostsAPI/coverage-testing/lcov-report/index.html
 
 Verás el desglose completo de cobertura por archivo (statements, branches, functions, lines).
 
-> Cobertura actual: **~96% statements · ~90% branches · ~92% functions · ~96% lines** — 255 tests en 26 suites.
