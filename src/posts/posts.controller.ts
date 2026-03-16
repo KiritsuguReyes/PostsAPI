@@ -13,6 +13,7 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth, ApiBody, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
 import { PostsService } from './posts.service';
@@ -39,6 +40,12 @@ export class PostsController {
     status: 201, 
     description: 'Post creado exitosamente' 
   })
+  @SwaggerApiResponse({ 
+    status: 429, 
+    description: 'Demasiadas creaciones de posts' 
+  })
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 2, ttl: 30000 } }) // 2 posts por 30 segundos
   @HttpCode(HttpStatus.CREATED)
   async create(@Req() req: Request, @Body(ValidationPipe) createPostDto: CreatePostDto) {
     const userId = JwtClaimsUtil.getUserId(req);

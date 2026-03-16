@@ -13,6 +13,7 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CommentsService } from './comments.service';
@@ -39,6 +40,12 @@ export class CommentsController {
     status: 201, 
     description: 'Comentario creado exitosamente' 
   })
+  @SwaggerApiResponse({ 
+    status: 429, 
+    description: 'Demasiados comentarios creados' 
+  })
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 4, ttl: 30000 } }) // 4 comentarios por 30 segundos
   @HttpCode(HttpStatus.CREATED)
   async create(@Req() req: Request, @Body(ValidationPipe) createCommentDto: CreateCommentDto) {
     const userId = JwtClaimsUtil.getUserId(req);
