@@ -119,4 +119,9 @@ export class CommentsService {
     if (!result) throw new NotFoundException(`Comment with ID ${id} not found`);
     await this.cache.invalidateCollection(COLLECTION);
   }
+
+  async removeByPostId(postId: string): Promise<void> {
+    await this.commentModel.deleteMany({ postId }).exec();
+    await this.cache.invalidateCollection(COLLECTION);
+  }
 }

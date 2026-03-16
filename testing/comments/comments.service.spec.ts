@@ -25,6 +25,7 @@ function createMockCommentModel() {
   ModelMock.findById = jest.fn();
   ModelMock.findByIdAndUpdate = jest.fn();
   ModelMock.findByIdAndDelete = jest.fn();
+  ModelMock.deleteMany = jest.fn();
   ModelMock.countDocuments = jest.fn();
   return ModelMock;
 }
@@ -208,6 +209,27 @@ describe('CommentsService', () => {
       });
 
       await expect(service.remove('nonexistentid')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('removeByPostId()', () => {
+    it('should delete all comments for a post and invalidate cache', async () => {
+      model.deleteMany = jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ deletedCount: 3 }),
+      });
+
+      await service.removeByPostId('507f1f77bcf86cd799439011');
+
+      expect(model.deleteMany).toHaveBeenCalledWith({ postId: '507f1f77bcf86cd799439011' });
+      expect(mockRedisCacheService.invalidateCollection).toHaveBeenCalledWith('comments');
+    });
+
+    it('should not throw when no comments exist for the post', async () => {
+      model.deleteMany = jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ deletedCount: 0 }),
+      });
+
+      await expect(service.removeByPostId('nonexistentpostid')).resolves.not.toThrow();
     });
   });
 });

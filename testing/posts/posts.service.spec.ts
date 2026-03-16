@@ -4,6 +4,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { PostsService } from '../../src/posts/posts.service';
 import { Post } from '../../src/posts/schemas/post.schema';
 import { RedisCacheService } from '../../src/common/cache/redis-cache.service';
+import { CommentsService } from '../../src/comments/comments.service';
 
 const mockPost = {
   _id: '507f1f77bcf86cd799439011',
@@ -33,6 +34,10 @@ const mockRedisCacheService = {
   invalidateCollection: jest.fn().mockResolvedValue(undefined),
 };
 
+const mockCommentsService = {
+  removeByPostId: jest.fn().mockResolvedValue(undefined),
+};
+
 // Factory para crear instancias mock del modelo
 function createMockModel() {
   const instance = {
@@ -56,6 +61,7 @@ describe('PostsService', () => {
         PostsService,
         { provide: getModelToken(Post.name), useValue: model },
         { provide: RedisCacheService, useValue: mockRedisCacheService },
+        { provide: CommentsService, useValue: mockCommentsService },
       ],
     }).compile();
 
@@ -243,7 +249,7 @@ describe('PostsService', () => {
   });
 
   describe('remove()', () => {
-    it('should delete post and invalidate cache', async () => {
+    it('should delete post, cascade delete comments and invalidate cache', async () => {
       model.findByIdAndDelete = jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockPost),
       });
@@ -251,6 +257,7 @@ describe('PostsService', () => {
       await service.remove('507f1f77bcf86cd799439011');
 
       expect(model.findByIdAndDelete).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+      expect(mockCommentsService.removeByPostId).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
       expect(mockRedisCacheService.invalidateCollection).toHaveBeenCalledWith('posts');
     });
 
@@ -264,7 +271,7 @@ describe('PostsService', () => {
   });
 
   describe('removeBulk()', () => {
-    it('should delete multiple posts and invalidate cache', async () => {
+    it('should delete multiple posts, cascade delete their comments and invalidate cache', async () => {
       model.deleteMany = jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue({ deletedCount: 2 }),
       });
@@ -273,6 +280,8 @@ describe('PostsService', () => {
       const count = await service.removeBulk(ids);
 
       expect(model.deleteMany).toHaveBeenCalledWith({ _id: { $in: ids } });
+      expect(mockCommentsService.removeByPostId).toHaveBeenCalledWith(ids[0]);
+      expect(mockCommentsService.removeByPostId).toHaveBeenCalledWith(ids[1]);
       expect(count).toBe(2);
       expect(mockRedisCacheService.invalidateCollection).toHaveBeenCalledWith('posts');
     });

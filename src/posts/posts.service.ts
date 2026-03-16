@@ -5,6 +5,7 @@ import { Post, PostDocument } from './schemas/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { RedisCacheService } from '../common/cache/redis-cache.service';
+import { CommentsService } from '../comments/comments.service';
 
 const COLLECTION = 'posts';
 
@@ -13,6 +14,7 @@ export class PostsService implements OnApplicationBootstrap {
   constructor(
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
     private readonly cache: RedisCacheService,
+    private readonly commentsService: CommentsService,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -126,11 +128,15 @@ export class PostsService implements OnApplicationBootstrap {
   async remove(id: string): Promise<void> {
     const result = await this.postModel.findByIdAndDelete(id).exec();
     if (!result) throw new NotFoundException(`Post with ID ${id} not found`);
+    // Borrado en cascada: eliminar todos los comentarios del post
+    await this.commentsService.removeByPostId(id);
     await this.cache.invalidateCollection(COLLECTION);
   }
 
   async removeBulk(ids: string[]): Promise<number> {
     const result = await this.postModel.deleteMany({ _id: { $in: ids } }).exec();
+    // Borrado en cascada: eliminar todos los comentarios de los posts borrados
+    await Promise.all(ids.map(id => this.commentsService.removeByPostId(id)));
     await this.cache.invalidateCollection(COLLECTION);
     return result.deletedCount;
   }
